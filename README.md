@@ -12,6 +12,7 @@ This project will include a CMake build file demonstrating installation and link
 * PFUnit 
 
 ## To Dos
+* Move zofu unit test into its own source directory OR rename 
 * Write FindZofu.cmake 
 * Include in that, a script that pulls Zofu off of github and builds it in a user-
 specified location => can supply that via a cmake function 
