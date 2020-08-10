@@ -10,7 +10,8 @@ enable_language(Fortran)
 
 # Unit test library
 set(ZOFU_DIR "/Users/alexanderbuccheri/Programs/zofu/zofu_library")
-find_library(ZOFU REQUIRED "${ZOFU_DIR}/lib")
+find_library(ZOFU NAME "libzofu" REQUIRED HINTS "${ZOFU_DIR}/lib")
+message("${ZOFU}")
 set(ZOFU_INCLUDE_DIR "${ZOFU_DIR}/include")
 include_directories(${ZOFU_INCLUDE_DIR})
 
@@ -62,7 +63,16 @@ target_link_libraries(unit_testing_exe
         )
 
 # Unit tests
+#enable_testing()
+
+# Note, this doesn't work
+# If I wanted to use cmake to run the Zofu driver generator, it would look something like:
+#add_custom_command(
+#        OUTPUT ${PROJECT_BINARY_DIR}/geometry_tests_driver.f90
+#        COMMAND ${ZOFU_DIR}/bin/zofu-driver geometry_tests.f90 geometry_tests_driver.f90
+#        DEPENDS geometry_tests.f90
+#       )
+
 add_executable(test_geometry src/geometry_tests.f90)
-target_link_libraries (test_geometry ZOFU libunit_testing)
+target_link_libraries (test_geometry ${ZOFU} ${libunit_testing})
 add_test(NAME UNITTEST_test_geometry COMMAND bin/test_geometry)
-enable_testing()
