@@ -7,17 +7,17 @@
 !   PATH_TO/zofu-driver geometry_tests.f90 geometry_tests_driver.f90 --mpi
 ! But doesn't seem like much point. Just manually write it as so
 !
-program geometry_tests
+module geometry_tests
     use zofu
     use constants, only: wp
     use geometry, only: distance_matrix
 
     type(unit_test_type) :: geom_test
 
-    call geom_test%init()
-    call geom_test%run(test_distance_matrix, &
-            '! Test distance matrix when passing an array of positions')
-    call geom_test%summary()
+!    call geom_test%init()
+!    call geom_test%run(test_distance_matrix, &
+!            '! Test distance matrix when passing an array of positions')
+!    call geom_test%summary()
 
 contains
 
@@ -45,4 +45,4 @@ contains
     end subroutine test_distance_matrix
 
 
-end program geometry_tests
+end module geometry_tests
