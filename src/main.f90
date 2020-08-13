@@ -1,9 +1,8 @@
 program main
+    use precision
+    use geometry
+    use maths_utils
 
-    ! To Do's
-    ! Set indenting and general style
-
-
-
+    write(*, *) "Main is just a stub to test linking"
 
 end program

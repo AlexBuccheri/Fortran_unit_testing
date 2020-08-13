@@ -19,6 +19,7 @@ include_directories(${ZOFU_INCLUDE_DIR})
 # -------------------
 # Library
 # -------------------
+# TODO(Alex) rename the library to something like base
 add_library(libunit_testing "")
 set_target_properties(libunit_testing
         PROPERTIES
@@ -37,7 +38,7 @@ target_sources(libunit_testing
         src/geometry/geometry.f90
         )
 
-# Has no dependencies
+# Has no dependencies - If introducing MPI or BLAS< add here
 # add_dependencies(libunit_testing)
 
 set_target_properties(libunit_testing PROPERTIES LIBRARY_OUTPUT_NAME unit_testing)
