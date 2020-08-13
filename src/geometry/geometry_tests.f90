@@ -8,9 +8,10 @@
 ! But doesn't seem like much point. Just manually write it as so
 !
 module geometry_tests
-    use zofu
+    use zofu,      only: unit_test_type
     use constants, only: wp
-    use geometry, only: distance_matrix
+    use geometry,  only: distance_matrix
+    implicit none
 
     type(unit_test_type) :: geom_test
 

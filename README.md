@@ -11,6 +11,16 @@ This project will include a CMake build file demonstrating installation and link
 * Fruit
 * PFUnit 
 
+## Writing Unit Tests and Adding to CMake
+
+Each source subdirectory should have one test per module, with the naming convention *module_tests.f90* and a driver 
+that calls all of the tests. The driver is generated when building with CMake. Specifically, *add_custom_command* calls 
+the driver supplied by th zofu library. 
+
+A test executable is buildable for each subdirectory.
+
+Would also like a test_all but I'm still considering ways of implementing. 
+
 ## To Dos
 * Move zofu unit test into its own source directory OR rename 
 * Write FindZofu.cmake 

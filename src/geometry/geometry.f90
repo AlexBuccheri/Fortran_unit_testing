@@ -1,6 +1,6 @@
 module geometry
-    use constants, only: wp
-    use maths_utils, only: norm, diagonal
+    use precision, only: wp
+    use maths_utils, only: norm
     private
 
 

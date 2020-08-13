@@ -8,6 +8,7 @@ enable_language(Fortran)
 #find_package(PkgConfig REQUIRED)
 #pkg_check_modules(ZOFU REQUIRED zofu>=1.0.0)
 
+# TODO(Alex) Write a FindZofu.cmake
 # Unit test library
 set(ZOFU_DIR "/Users/alexanderbuccheri/Programs/zofu/zofu_library")
 find_library(ZOFU NAME "libzofu" "zofu" REQUIRED HINTS "${ZOFU_DIR}/lib")
@@ -31,9 +32,9 @@ target_include_directories(libunit_testing
 
 target_sources(libunit_testing
         PRIVATE
-        src/constants.f90
-        src/maths_utils.f90
-        src/geometry.f90
+        src/units_and_constants/precision.f90
+        src/maths/maths_utils.f90
+        src/geometry/geometry.f90
         )
 
 # Has no dependencies
@@ -68,12 +69,15 @@ target_link_libraries(unit_testing_exe
 # Unit tests
 # -------------------
 #enable_testing()
-## https://stackoverflow.com/questions/2937128/cmake-add-custom-command-not-being-run
 
+# Geometry
+## https://stackoverflow.com/questions/2937128/cmake-add-custom-command-not-being-run
+#TODO(Alex) Add a second test module in this dircectory and link to the same driver
 add_custom_command(
         OUTPUT ${PROJECT_BINARY_DIR}/geometry_tests_driver.f90
-        COMMAND ${ZOFU_DIR}/bin/zofu-driver ${PROJECT_SOURCE_DIR}/src/geometry_tests.f90 ${PROJECT_BINARY_DIR}/geometry_tests_driver.f90
-        DEPENDS src/geometry_tests.f90
+        COMMAND ${ZOFU_DIR}/bin/zofu-driver ${PROJECT_SOURCE_DIR}/src/geometry/geometry_tests.f90
+                ${PROJECT_BINARY_DIR}/geometry_tests_driver.f90
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/geometry/geometry_tests.f90
         COMMENT "Generating ${PROJECT_BINARY_DIR}/geometry_tests_driver.f90"
 )
 
@@ -81,7 +85,7 @@ add_executable(test_geometry)
 
 target_sources(test_geometry
         PRIVATE
-        src/geometry_tests.f90
+        src/geometry/geometry_tests.f90
         ${PROJECT_BINARY_DIR}/geometry_tests_driver.f90
         )
 
@@ -89,5 +93,27 @@ add_dependencies(test_geometry libunit_testing)
 target_link_libraries(test_geometry ${ZOFU} libunit_testing)
 add_test(NAME UNITTEST_test_geometry COMMAND bin/test_geometry)
 
+# maths
+add_custom_command(
+        OUTPUT ${PROJECT_BINARY_DIR}/maths_utils_tests_driver.f90
+        COMMAND ${ZOFU_DIR}/bin/zofu-driver ${PROJECT_SOURCE_DIR}/src/maths/maths_utils_tests.f90
+        ${PROJECT_BINARY_DIR}/maths_utils_tests_driver.f90
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/maths/maths_utils_tests.f90
+        COMMENT "Generating ${PROJECT_BINARY_DIR}/maths_utils_tests_driver.f90")
 
+add_executable(test_maths_utils)
 
+target_sources(test_maths_utils
+        PRIVATE
+        src/maths/maths_utils_tests.f90
+        ${PROJECT_BINARY_DIR}/maths_utils_tests_driver.f90
+        )
+
+add_dependencies(test_maths_utils libunit_testing)
+target_link_libraries(test_maths_utils ${ZOFU} libunit_testing)
+add_test(NAME UNITTEST_test_maths_utils COMMAND bin/test_maths_utils)
+
+# Test all
+# TODO(Alex) Write a python script that runs each test exe, parses the results
+# and gives a full summary ?
+# CI can just run each separately

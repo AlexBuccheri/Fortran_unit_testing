@@ -1,6 +1,6 @@
 !> TODO(Alex) Write a bunch of maths utils
 module maths_utils
-    use constants, only: wp
+    use precision, only: wp
     implicit none
     private
 
@@ -8,15 +8,15 @@ module maths_utils
         module procedure norm_wp_1d
     end interface
 
-    interface diagonal
-        module procedure diagonal_wp
+    interface set_diagonal
+        module procedure set_diagonal_wp
     end interface
 
     interface is_square
         module procedure is_square_wp
     end interface is_square
 
-    public :: norm, diagonal, is_square
+    public :: norm, set_diagonal, is_square
 
 contains
     !> @ Norm
@@ -26,7 +26,7 @@ contains
     end function norm_wp_1d
 
     !> Set the diagonal of a matrix with a scalar value
-    subroutine diagonal_wp(a, value)
+    subroutine set_diagonal_wp(a, value)
         real(wp), intent(inout) :: a(:,:)
         real(wp), intent(in) :: value
         integer :: i
@@ -34,7 +34,7 @@ contains
         do i = 1, size(a, 1)
             a(i,i) = value
         end do
-    end subroutine diagonal_wp
+    end subroutine set_diagonal_wp
 
     logical function is_square_wp(A) result(square)
         real(wp), intent(in) :: A(:,:)

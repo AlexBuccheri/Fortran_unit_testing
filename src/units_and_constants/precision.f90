@@ -1,4 +1,4 @@
-module constants
+module precision
     use, intrinsic :: iso_fortran_env
     implicit none
 
@@ -7,4 +7,4 @@ module constants
     integer, parameter :: qp = REAL128
     integer, parameter :: wp = dp
 
-end module constants
+end module precision
