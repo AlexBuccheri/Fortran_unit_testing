@@ -34,9 +34,19 @@ target_include_directories(libunit_testing
 target_sources(libunit_testing
         PRIVATE
         src/units_and_constants/precision.f90
+
         src/maths/maths_utils.f90
+
         src/geometry/geometry.f90
+
+        src/asserts/asserts.F90
         )
+
+# Set pre-processing variable from -DDEBUG flag. Used same name
+if(DEBUG)
+    set_property(TARGET libunit_testing APPEND PROPERTY
+            COMPILE_DEFINITIONS "DEBUG")
+endif()
 
 # Has no dependencies - If introducing MPI or BLAS< add here
 # add_dependencies(libunit_testing)
@@ -73,7 +83,7 @@ target_link_libraries(unit_testing_exe
 
 # Geometry
 ## https://stackoverflow.com/questions/2937128/cmake-add-custom-command-not-being-run
-#TODO(Alex) Add a second test module in this dircectory and link to the same driver
+#TODO(Alex) Add a second test module in this directory and link to the same driver
 add_custom_command(
         OUTPUT ${PROJECT_BINARY_DIR}/geometry_tests_driver.f90
         COMMAND ${ZOFU_DIR}/bin/zofu-driver ${PROJECT_SOURCE_DIR}/src/geometry/geometry_tests.f90
