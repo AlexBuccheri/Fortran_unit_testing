@@ -8,12 +8,18 @@
 ! But doesn't seem like much point. Just manually write it as so
 !
 module geometry_tests
-    use zofu,      only: unit_test_type
-    use constants, only: wp
+    use zofu,        only: unit_test_type
+    use precision,   only: wp
+    use asserts,     only: assert
+    use maths_utils, only: is_square
+
+    !> Module being tested
     use geometry,  only: distance_matrix
+
     implicit none
 
     type(unit_test_type) :: geom_test
+
 
 !    call geom_test%init()
 !    call geom_test%run(test_distance_matrix, &
@@ -22,26 +28,34 @@ module geometry_tests
 
 contains
 
-    ! TODO(Alex) Clean this junk up
     subroutine test_distance_matrix(geom_test)
         ! Test distance matrix when passing an array of positions
         class(unit_test_type), intent(inout) :: geom_test
 
-        !real(wp), dimension(4,3) :: positions = [[1._wp, 1._wp, 1._wp,],
-        !                                        2._wp, 3._wp, 4._wp]]
-!        real(wp), allocatable :: d_transpose(:,:)
-!        integer :: n_atoms
+        !> Number of atoms
+        integer, parameter :: n_atoms = 4
 
-        call geom_test%assert(4 == 4,  name = '4 == 4')
+        !> Atomic coordinates, written row-wise but stored columnwise
+        real(wp), dimension(3, n_atoms) :: positions = &
+        reshape([1._wp, 1._wp, 1._wp, &
+                 2._wp, 2._wp, 2._wp, &
+                 3._wp, 3._wp, 3._wp, &
+                 4._wp, 4._wp, 4._wp], [3, n_atoms])
 
-!        n_atoms = size(positions)
-!        d = distance_matrix(molecule)
-!        call geom_test%assert(size(d, 1) == 4,  name = 'size(d, 1) == 4')
-!        call geom_test%assert(is_square(d), name = 'is_square(d)')
-!
-!        allocate(d_transpose(n_atoms, n_atoms))
-!        d_transpose = transpose(d)
-!        call geom_test%assert(d, d_transpose, name = 'd = d^T')
+        !> Distance matrix
+        real(wp), allocatable :: d(:,:)
+
+
+        d = distance_matrix(positions)
+        call assert(.not. allocated(d), &
+                message = "d is allocated (deliberate so one can check the assertion)")
+
+        call geom_test%assert(all(positions(:, 1) == [1._wp, 1._wp, 1._wp]), &
+            name = 'Atomic positions not stored per column')
+        call geom_test%assert(n_atoms == 4, name = 'n_atoms /= 4')
+        call geom_test%assert(size(d, 2) == 4,  name = 'size(d, 2) /= 4')
+        call geom_test%assert(is_square(d), name = 'd is not square')
+        call geom_test%assert(d, transpose(d), name = 'd is not square (d /= d^T)')
 
     end subroutine test_distance_matrix
 

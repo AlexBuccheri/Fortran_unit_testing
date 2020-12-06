@@ -1,6 +1,8 @@
 module geometry
     use precision, only: wp
+    use asserts, only: assert
     use maths_utils, only: norm
+
     private
 
 
@@ -30,7 +32,7 @@ contains
     !TODO(Alex) Code up some test systems (crystals)
     !type(atom_type) function
 
-    !> @brief
+    !> @brief Construct distance matrix
     !> For an array of atoms, construct a distance matrix
     !> @param[in] molecule
     function distance_matrix_from_positions(positions) result(d)
@@ -38,7 +40,10 @@ contains
         real(wp), allocatable :: d(:,:)
         integer :: ia, ja, n_atoms
 
-        n_atoms = size(positions)
+        call assert(size(positions, 1) == 3, &
+                message = "Distance matrix expects atomic coordinates stored (3, n_atoms)")
+
+        n_atoms = size(positions, 2)
         allocate(d(n_atoms, n_atoms))
 
         do ia = 1, n_atoms
