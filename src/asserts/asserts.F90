@@ -16,7 +16,7 @@ module asserts
 
 contains
 
-    !> @todo(Alex) Make thread-safe and MPI-safe
+    !> @todo(Alex) Make thread-safe and MPI-safe w.r.t. printing and potentially stopping
     !> @brief Assert if a logical condition is true
     !>
     !> If not compiled in DEBUG mode, the compiler is smart enough

@@ -5,11 +5,8 @@ module geometry
 
     private
 
-
     !> Type Atom
     type atom_type
-        !TODO(Alex) Check out how private affects type access
-        ! private
         !> Position in angstrom
         real(wp), dimension(3) :: position
         !> Species label
@@ -24,17 +21,19 @@ module geometry
     end interface distance_matrix
 
 
-    public :: distance_matrix
+    public :: distance_matrix, atom_type
 
 
 contains
 
     !TODO(Alex) Code up some test systems (crystals)
-    !type(atom_type) function
 
     !> @brief Construct distance matrix
-    !> For an array of atoms, construct a distance matrix
-    !> @param[in] molecule
+    !>
+    !> Given a set of atomic positions, construct a distance matrix
+    !>
+    !> @param positions atomic positions
+    !> @parm d distance matrix
     function distance_matrix_from_positions(positions) result(d)
         real(wp), intent(in) :: positions(:,:)
         real(wp), allocatable :: d(:,:)
@@ -55,14 +54,12 @@ contains
 
     end function distance_matrix_from_positions
 
-    !> @brief
-    !> For an array of atoms, construct a distance matrix
-    !
-    !> Would ideally wrap distance_matrix_from_positions but
-    !> then I need to write another routine to create an array of positions
-    !> from molecule
-    !
-    !> @param[in] molecule
+    !> @brief Construct distance matrix
+    !>
+    !> Given an array of atoms type, construct a distance matrix
+    !>
+    !> @param[in] molecule   array of atoms with type \p atom_type
+    !> @param[out] d  distance matrix
     function distance_matrix_from_molecule(molecule) result(d)
         type(atom_type), intent(in) :: molecule(:)
         real(wp), allocatable :: d(:,:)

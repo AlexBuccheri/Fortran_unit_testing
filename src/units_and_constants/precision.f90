@@ -1,6 +1,7 @@
 module precision
     use, intrinsic :: iso_fortran_env
     implicit none
+    public
 
     integer, parameter :: sp = REAL32
     integer, parameter :: dp = REAL64
