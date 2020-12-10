@@ -1,0 +1,8 @@
+[submodule "external/zofu"]
+	path = external/zofu
+	url = https://github.com/acroucher/zofu
+	branch = master
+[submodule "external/ford"]
+	path = external/ford
+	url = https://github.com/Fortran-FOSS-Programmers/ford
+	branch = master

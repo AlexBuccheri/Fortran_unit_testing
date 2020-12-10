@@ -1,0 +1,9 @@
+# Build directories
+cmake-build-*
+
+# Clion indexing 
+.idea
+
+# Ignore submodules, except for directory and its readme 
+external/**
+!external/README.md 
