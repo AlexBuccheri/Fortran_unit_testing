@@ -8,6 +8,7 @@ enable_language(Fortran)
 #find_package(PkgConfig REQUIRED)
 #pkg_check_modules(ZOFU REQUIRED zofu>=1.0.0)
 
+
 # TODO(Alex) Write a FindZofu.cmake
 # Unit test library
 set(ZOFU_DIR "/Users/alexanderbuccheri/Programs/zofu/zofu_library")
@@ -15,6 +16,42 @@ find_library(ZOFU NAME "libzofu" "zofu" REQUIRED HINTS "${ZOFU_DIR}/lib")
 message("-- Zofu library location: ${ZOFU}")
 set(ZOFU_INCLUDE_DIR "${ZOFU_DIR}/include")
 include_directories(${ZOFU_INCLUDE_DIR})
+
+
+
+# -------------------
+# External libraries
+# -------------------
+
+option(ENABLE_DOCS "Enable documentation" OFF)
+
+# TODO(Alex) Make these functions
+# TODO(Alex) Use LOWER and compare to lowercase strings
+
+# https://github.com/Fortran-FOSS-Programmers/ford/wiki/Writing-Documentation
+if (${ENABLE_DOCS} STREQUAL "FORD")
+# https://github.com/Fortran-FOSS-Programmers/ford/wiki
+# Some examples. JSON library (it's a mess): https://github.com/jacobwilliams/json-fortran/blob/master/CMakeLists.txt
+# https://github.com/hornekyle/CommonModules/blob/master/CMakeLists.txt    THIS IS THE ONE TO FOLLOW
+
+    message(STATUS "Build FORD Documentation")
+#    set(doc_dir documentation)
+#    set ( DOC_DIR "${PROJECT_BINARY_DIR}/doc" )
+#    set ( PAGES_DIR "${PROJECT_SOURCE_DIR}/pages" )
+#    set ( PROJ_DIR "${PROJECT_SOURCE_DIR}/src" )
+#    set ( FORD_PROJECT_FILE "${PROJECT_SOURCE_DIR}/json-fortran.md" )
+
+
+    #find_package(Ford REQUIRED)
+    # TODO(Alex) Difference between find_package and find_program
+    find_program (FORD ford REQUIRED)
+endif()
+
+if (${ENABLE_DOCS} STREQUAL "doxygen")
+    message(STATUS "Build doxygen Documentation")
+    set(doc_dir documentation)
+    find_package(Doxygen REQUIRED)
+endif()
 
 # -------------------
 # Library
@@ -42,15 +79,14 @@ target_sources(libunit_testing
         src/asserts/asserts.F90
         )
 
-# Set pre-processing variable from -DDEBUG flag. Used same name
+# Set fortran pre-processing variable from CMake -DDEBUG flag
 if(DEBUG)
     set_property(TARGET libunit_testing APPEND PROPERTY
             COMPILE_DEFINITIONS "DEBUG")
 endif()
 
-# Has no dependencies - If introducing MPI or BLAS< add here
-# add_dependencies(libunit_testing)
 
+# add_dependencies(libunit_testing FORD)  # Apparently does not exist
 set_target_properties(libunit_testing PROPERTIES LIBRARY_OUTPUT_NAME unit_testing)
 
 # -------------------

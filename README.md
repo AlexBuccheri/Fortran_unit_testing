@@ -31,12 +31,12 @@ specified location => can supply that via a cmake function
 Documentation written with FORD:
 https://github.com/Fortran-FOSS-Programmers/ford/wiki/Writing-Documentation
 
-## Submodules
+## External Libraries/Dependencies 
 Potential means of keeping track of external dependencies:
 * git submodules
 * Cmake `ExternalProject` Command
 * [vkpkg](https://docs.microsoft.com/en-us/cpp/build/vcpkg?view=msvc-160) although fortran support appears limited
-* [Fortran Package Manager](https://github.com/fortran-lang/fpm) 
+* [Fortran Package Manager](https://github.com/fortran-lang/fpm)  
 * Custom BASH or python script that pulls the relevant packages from github and builds 
 
 ### Git Submodules
@@ -51,3 +51,9 @@ then one will have to download and install those separately.
 
 Useful references on submodules:
 * https://www.vogella.com/tutorials/GitSubmodules/article.html
+* https://github.blog/2016-02-01-working-with-submodules/
+* https://www.atlassian.com/git/tutorials/git-submodule
+
+### Fortran Package Manager
+
+#TODO(Alex) Add Cmake commands to build external dependencies? 
