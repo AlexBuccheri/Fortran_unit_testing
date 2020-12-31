@@ -16,7 +16,8 @@ find_library(ZOFU NAME "libzofu" "zofu" REQUIRED HINTS "${ZOFU_DIR}/lib")
 message("-- Zofu library location: ${ZOFU}")
 set(ZOFU_INCLUDE_DIR "${ZOFU_DIR}/include")
 include_directories(${ZOFU_INCLUDE_DIR})
-
+# Program that generates a unit test driver given a set of modules
+set(ZOFU_DRIVER ${ZOFU_DIR}/bin/zofu-driver)
 
 
 # -------------------
@@ -117,50 +118,31 @@ target_link_libraries(unit_testing_exe
 # -------------------
 #enable_testing()
 
-# Geometry
-## https://stackoverflow.com/questions/2937128/cmake-add-custom-command-not-being-run
-#TODO(Alex) Add a second test module in this directory and link to the same driver
-add_custom_command(
-        OUTPUT ${PROJECT_BINARY_DIR}/geometry_tests_driver.f90
-        COMMAND ${ZOFU_DIR}/bin/zofu-driver ${PROJECT_SOURCE_DIR}/src/geometry/geometry_tests.f90
-                ${PROJECT_BINARY_DIR}/geometry_tests_driver.f90
-        DEPENDS ${PROJECT_SOURCE_DIR}/src/geometry/geometry_tests.f90
-        COMMENT "Generating ${PROJECT_BINARY_DIR}/geometry_tests_driver.f90"
-)
+# List of subdirectories and their unit tests
+# These should go in their respective CMake directories
+list(APPEND geometry "geometry_tests.f90")
+list(APPEND maths "maths_utils_tests.f90")
 
-add_executable(test_geometry)
+# This will stay in top level cmake
+list(APPEND unit_test_source "geometry" "maths")
 
-target_sources(test_geometry
-        PRIVATE
-        src/geometry/geometry_tests.f90
-        ${PROJECT_BINARY_DIR}/geometry_tests_driver.f90
-        )
+# Note the tricks I'm using
+foreach(SUBDIR ${unit_test_source})
+    set(unit_test "${${SUBDIR}}")
+    get_filename_component(name_without_extension ${unit_test} NAME_WE)
+    message("${SUBDIR}" " " "${unit_test}" " " "${name_without_extension}")
 
-add_dependencies(test_geometry libunit_testing)
-target_link_libraries(test_geometry ${ZOFU} libunit_testing)
-add_test(NAME UNITTEST_test_geometry COMMAND bin/test_geometry)
+    add_custom_command(
+            OUTPUT ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90
+            COMMAND ZOFU_DRIVER ${PROJECT_SOURCE_DIR}/src/${SUBDIR}/${unit_test}
+            ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90
+            DEPENDS ${PROJECT_SOURCE_DIR}/src/${SUBDIR}/${unit_test}
+            COMMENT "Generating ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90")
 
-# maths
-add_custom_command(
-        OUTPUT ${PROJECT_BINARY_DIR}/maths_utils_tests_driver.f90
-        COMMAND ${ZOFU_DIR}/bin/zofu-driver ${PROJECT_SOURCE_DIR}/src/maths/maths_utils_tests.f90
-        ${PROJECT_BINARY_DIR}/maths_utils_tests_driver.f90
-        DEPENDS ${PROJECT_SOURCE_DIR}/src/maths/maths_utils_tests.f90
-        COMMENT "Generating ${PROJECT_BINARY_DIR}/maths_utils_tests_driver.f90")
 
-add_executable(test_maths_utils)
+endforeach(SUBDIR)
 
-target_sources(test_maths_utils
-        PRIVATE
-        src/maths/maths_utils_tests.f90
-        ${PROJECT_BINARY_DIR}/maths_utils_tests_driver.f90
-        )
 
-add_dependencies(test_maths_utils libunit_testing)
-target_link_libraries(test_maths_utils ${ZOFU} libunit_testing)
-add_test(NAME UNITTEST_test_maths_utils COMMAND bin/test_maths_utils)
 
-# Test all
-# TODO(Alex) Write a python script that runs each test exe, parses the results
-# and gives a full summary ?
-# CI can just run each separately
+
+
