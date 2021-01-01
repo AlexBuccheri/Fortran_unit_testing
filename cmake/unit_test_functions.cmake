@@ -21,8 +21,8 @@ function(create_unit_test_executable)
             ${ARGV})                                # ${ARGN} or ${ARGV}. (I think) ${ARGV} means accept a variable
                                                     # number of arguments, which one want for a list of no fixed size
 
+    # Full file path
     list(TRANSFORM MY_FUNC_UNIT_TESTS PREPEND "${PROJECT_SOURCE_DIR}/src/${MY_FUNC_SUBDIR}/")
-
 
     # Runs the unix command specified by COMMAND:
     # Create a unit test driver that runs all tests in the respective subdirectory
