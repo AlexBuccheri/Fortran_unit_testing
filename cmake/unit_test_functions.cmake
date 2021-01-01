@@ -10,7 +10,7 @@ function(create_unit_test_executable)
     # https://cmake.org/cmake/help/latest/command/cmake_parse_arguments.html
     # Define the CMake function signature keywords and their types
     # Of the general form: set(type KEYWORD)
-    set(options)                                    # Binary options (none for this function)
+    set(options MPI_ENABLED)                        # Binary options
     set(oneValueArgs SUBDIR)                        # Single-value options
     set(multiValueArgs UNIT_TESTS)                  # Multi-value options: Multiple arguments or list/s
     # TODO(Alex) Use a better prefix
@@ -23,13 +23,19 @@ function(create_unit_test_executable)
 
     list(TRANSFORM MY_FUNC_UNIT_TESTS PREPEND "${PROJECT_SOURCE_DIR}/src/${MY_FUNC_SUBDIR}/")
 
+
     # Runs the unix command specified by COMMAND:
     # Create a unit test driver that runs all tests in the respective subdirectory
     # using ${ZOFU_DRIVER} (which must be my custom script, not the binary supplied with the library)
+    IF(NOT ${MY_FUNC_MPI_ENABLED})
     add_custom_command(
             OUTPUT ${PROJECT_BINARY_DIR}/${MY_FUNC_SUBDIR}_driver.f90
             COMMAND ${ZOFU_DRIVER} ${MY_FUNC_UNIT_TESTS} ${PROJECT_BINARY_DIR}/${MY_FUNC_SUBDIR}_driver.f90
             COMMENT "Generating ${PROJECT_BINARY_DIR}/${MY_FUNC_SUBDIR}_driver.f90")
+    ELSE()
+        # TODO(Alex) Extend to work with MPI
+        message(FATAL_ERROR "Custom Zofu driver has not yet been extended to work with MPI" )
+    ENDIF()
 
     # Create the test driver executable and add module targets:
     # all unit test modules and the test driver

@@ -25,46 +25,9 @@ set(ZOFU_DRIVER ${PROJECT_SOURCE_DIR}/utils/make_zofu_driver.py)
 
 # TODO(Alex) Write a FindZofu.cmake
 # TODO(Alex) Zofu has CMake, which is great. Use that instead of building with MESON
-# TODO(Alex) Ask them to modify the driver generator to parse test routines from
-# multiple modules
-# TODO(Alex) Ask Zofu author if he wants to post a link to this repo, demonstrating
-# how Zofu can be used
+# TODO(Alex) Ask them to modify the driver generator to parse test routines from multiple modules
+# TODO(Alex) Ask Zofu author if he wants to post a link to this repo, demonstrating how Zofu can be used
 
-
-
-# -------------------
-# External libraries
-# -------------------
-
-option(ENABLE_DOCS "Enable documentation" OFF)
-
-# TODO(Alex) Make these functions
-# TODO(Alex) Use LOWER and compare to lowercase strings
-
-# https://github.com/Fortran-FOSS-Programmers/ford/wiki/Writing-Documentation
-if (${ENABLE_DOCS} STREQUAL "FORD")
-# https://github.com/Fortran-FOSS-Programmers/ford/wiki
-# Some examples. JSON library (it's a mess): https://github.com/jacobwilliams/json-fortran/blob/master/CMakeLists.txt
-# https://github.com/hornekyle/CommonModules/blob/master/CMakeLists.txt    THIS IS THE ONE TO FOLLOW
-
-    message(STATUS "Build FORD Documentation")
-#    set(doc_dir documentation)
-#    set ( DOC_DIR "${PROJECT_BINARY_DIR}/doc" )
-#    set ( PAGES_DIR "${PROJECT_SOURCE_DIR}/pages" )
-#    set ( PROJ_DIR "${PROJECT_SOURCE_DIR}/src" )
-#    set ( FORD_PROJECT_FILE "${PROJECT_SOURCE_DIR}/json-fortran.md" )
-
-
-    #find_package(Ford REQUIRED)
-    # TODO(Alex) Difference between find_package and find_program
-    find_program (FORD ford REQUIRED)
-endif()
-
-if (${ENABLE_DOCS} STREQUAL "doxygen")
-    message(STATUS "Build doxygen Documentation")
-    set(doc_dir documentation)
-    find_package(Doxygen REQUIRED)
-endif()
 
 # -------------------
 # Library
@@ -144,21 +107,10 @@ list(APPEND maths_unit_tests "maths_functions_tests.f90"   # Unit tests for math
 list(APPEND geometry_unit_tests "geometry_tests.f90"       # Unit tests for geometry.f90
         )
 
+# TODO(Alex) Extend to work with MPI
+#create_unit_test_executable(MPI_ENABLED SUBDIR "maths" UNIT_TESTS ${maths_unit_tests} )
+
 # Generates a unit test executable using the Zofu unit testing framework
 create_unit_test_executable(SUBDIR "maths" UNIT_TESTS ${maths_unit_tests})
 
 create_unit_test_executable(SUBDIR "geometry" UNIT_TESTS ${geometry_unit_tests})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
