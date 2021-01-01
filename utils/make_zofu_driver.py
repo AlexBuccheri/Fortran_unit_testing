@@ -142,7 +142,7 @@ def main():
 
     python3 make_zofu_driver.py module1.f90 module2.F90 test_driver.f90
     """
-    assert len(sys.argv), \
+    assert len(sys.argv) >= 3, \
         'Must provide at least one module and the test driver name as script args'
     fortran_source = sys.argv[1:-1]
     driver_name_with_path = sys.argv[-1]
