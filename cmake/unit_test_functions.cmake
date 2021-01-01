@@ -53,4 +53,9 @@ function(create_unit_test_executable)
     # We assume that ZOFU is built and found by CMake at this point
     target_link_libraries(test_${MY_FUNC_SUBDIR} ${ZOFU} libunit_testing)
 
+    # Allows test executable `test_${MY_FUNC_SUBDIR}` to be run with ctest
+    # TODO(Alex) Update this COMMAND path when I put things in sensible places
+    add_test(NAME UNITTEST_${MY_FUNC_SUBDIR}
+            COMMAND ${PROJECT_BINARY_DIR}/test_${MY_FUNC_SUBDIR})
+
 endfunction()
