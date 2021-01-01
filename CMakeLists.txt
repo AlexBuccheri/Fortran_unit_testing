@@ -17,7 +17,9 @@ message("-- Zofu library location: ${ZOFU}")
 set(ZOFU_INCLUDE_DIR "${ZOFU_DIR}/include")
 include_directories(${ZOFU_INCLUDE_DIR})
 # Program that generates a unit test driver given a set of modules
-set(ZOFU_DRIVER ${ZOFU_DIR}/bin/zofu-driver)
+# set(ZOFU_DRIVER ${ZOFU_DIR}/bin/zofu-driver)
+# My Zofu driver
+set(ZOFU_DRIVER ${PROJECT_SOURCE_DIR}/utils/make_zofu_driver.py)
 
 
 # -------------------
@@ -113,36 +115,68 @@ target_link_libraries(unit_testing_exe
         libunit_testing
         )
 
+# TODO(Alex) Separate unit tests, modules, libraries, bin, src in the cmake build folder
+
 # -------------------
 # Unit tests
 # -------------------
-#enable_testing()
+enable_testing()
 
-# List of subdirectories and their unit tests
-# These should go in their respective CMake directories
+# List with name equal to an src subdirectory, containing all unit tests in the subdirectory
+# No assumption is made regarding unit test names
+# These could go in their respective CMake directories
+
+## https://stackoverflow.com/questions/2937128/cmake-add-custom-command-not-being-run
+# TODO(Alex) Add a second test module to a given subdirectory, Only want one test driver per subdirectory
+# One could in principle, just write the test driver per module... nicer to automate though
+
+# Zofu has CMake, which is great
+# Zofu's driver utility only accepts one module argument =>
+# binary per test (more micro than I would have liked)
+# ask them to modify the driver generator OR Write my own driver generator (probably not too hard)
+#   Issue of then declaring the test object in each module => Write my own driver generator
+#   Can also have it check each module for errors and warn we're using non-standard zofu. Think about how to declare/initialise the test object
+# Manually write the drivers (got the issue of people forgetting to add tests)
+#
+
 list(APPEND geometry "geometry_tests.f90")
 list(APPEND maths "maths_utils_tests.f90")
 
-# This will stay in top level cmake
+# List of strings with the names equal to lists
 list(APPEND unit_test_source "geometry" "maths")
 
-# Note the tricks I'm using
 foreach(SUBDIR ${unit_test_source})
+
+    # Because the unit_test_souce string entries are consistent with the lists
+    # of unit tests, one can also access the list contents... need to think about
+    # this if there are multiple tests per subdirectory
     set(unit_test "${${SUBDIR}}")
     get_filename_component(name_without_extension ${unit_test} NAME_WE)
-    message("${SUBDIR}" " " "${unit_test}" " " "${name_without_extension}")
 
+    # Call ZOFU's driver utility to create a test driver, ${name_without_extension}_driver.f90,
+    # to run src/${SUBDIR}/${unit_test}
     add_custom_command(
             OUTPUT ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90
-            COMMAND ZOFU_DRIVER ${PROJECT_SOURCE_DIR}/src/${SUBDIR}/${unit_test}
+            COMMAND ${ZOFU_DRIVER} ${PROJECT_SOURCE_DIR}/src/${SUBDIR}/${unit_test}
             ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90
             DEPENDS ${PROJECT_SOURCE_DIR}/src/${SUBDIR}/${unit_test}
             COMMENT "Generating ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90")
+    # or if using MPI:
+    #   PATH_TO/zofu-driver geometry_tests.f90 geometry_tests_driver.f90 --mpi
 
+    # Test driver is a program that is then linked to the the ZOFU unit test framework
+    # and our main code compiled as library, libunit_testing
+    add_executable(test_${name_without_extension})
+
+    target_sources(test_${name_without_extension}
+            PRIVATE
+            src/${SUBDIR}/${unit_test}
+            ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90
+            )
+
+    add_dependencies(test_${name_without_extension} libunit_testing)
+    target_link_libraries(test_${name_without_extension} ${ZOFU} libunit_testing)
 
 endforeach(SUBDIR)
-
-
-
 
 
