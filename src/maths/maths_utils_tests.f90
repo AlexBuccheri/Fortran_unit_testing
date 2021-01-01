@@ -1,3 +1,13 @@
+! Zofu
+! Each test case subroutine must have a name beginning with test_.
+! This convention allows the test module to contain other subroutines which are not tests,
+! but may be called by the test case subroutines.
+!
+! If a test case subroutine contains a comment with a description of the test case
+! as its first non-blank line, this description will be used in the test output
+! (e.g. if an assertion in the case fails). If no description comment is given,
+! the subroutine name is used for the description.
+
 module maths_utils_tests
     use precision,   only: wp
     use maths_utils, only: set_diagonal, is_square
