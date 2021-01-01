@@ -14,8 +14,9 @@ module maths_utils_tests
     use maths_utils, only: set_diagonal, is_square
     use zofu,        only: unit_test_type
     implicit none
+    private
 
-    type(unit_test_type) :: maths_test
+    public :: test_is_square, test_diagonal
 
 contains
 

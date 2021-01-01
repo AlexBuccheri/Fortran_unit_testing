@@ -10,8 +10,8 @@ module geometry_tests
     use geometry,  only: distance_matrix
 
     implicit none
-
-    type(unit_test_type) :: geom_test
+    private
+    public :: test_distance_matrix
 
 contains
 

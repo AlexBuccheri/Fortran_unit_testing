@@ -5,13 +5,13 @@ module maths_functions_tests
     use maths_functions, only: sgn
 
     implicit none
-    !TODO(Alex) Is this required when writing as a module?
-    type(unit_test_type) :: tester
+    private
 
+    public :: test_sgn_function
 
 contains
 
-    subroutine test_sgn_function(tester)
+     subroutine test_sgn_function(tester)
         ! Test sgn function for x = positive, negative and zero
         class(unit_test_type), intent(inout) :: tester
 
