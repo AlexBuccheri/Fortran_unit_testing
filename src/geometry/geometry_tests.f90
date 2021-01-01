@@ -1,12 +1,5 @@
 !> Module to test geometry functions and routines
 !
-! Notes:
-! Can generate the driver program with:
-!   PATH_TO/zofu-driver geometry_tests.f90 geometry_tests_driver.f90
-! or if using MPI:
-!   PATH_TO/zofu-driver geometry_tests.f90 geometry_tests_driver.f90 --mpi
-! But doesn't seem like much point. Just manually write it as so
-!
 module geometry_tests
     use zofu,        only: unit_test_type
     use precision,   only: wp
