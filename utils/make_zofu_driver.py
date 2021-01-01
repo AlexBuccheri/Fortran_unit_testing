@@ -103,9 +103,14 @@ def generate_zofu_driver(driver_name: str, modules: list, subroutines: list) -> 
     :return: Zofu test driver string
     """
     indent = ' '*3
-    extensions = ['.f90', '.f95', '.f03', '.f08']
 
-    if driver_name[-4].lower in extensions:
+    # Specific to .find
+    not_found = -1
+    assert driver_name.find('/') == not_found, "driver name should not include '/'"
+
+    # Remove any trailing extensions
+    extensions = ['.f90', '.f95', '.f03', '.f08']
+    if driver_name[-4:].lower() in extensions:
         driver_name = driver_name[:-4]
 
     driver_string = 'program ' + driver_name + '\n'
@@ -140,12 +145,13 @@ def main():
     assert len(sys.argv), \
         'Must provide at least one module and the test driver name as script args'
     fortran_source = sys.argv[1:-1]
-    driver_name = sys.argv[-1]
+    driver_name_with_path = sys.argv[-1]
+    driver_name = driver_name_with_path.split('/')[-1]
 
     modules, subroutines = parse_fortran_source(fortran_source)
     driver_string = generate_zofu_driver(driver_name, modules, subroutines)
 
-    fid = open(driver_name)
+    fid = open(driver_name_with_path, "w")
     fid.write(driver_string)
     fid.close()
     return

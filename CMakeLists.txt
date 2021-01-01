@@ -17,9 +17,9 @@ message("-- Zofu library location: ${ZOFU}")
 set(ZOFU_INCLUDE_DIR "${ZOFU_DIR}/include")
 include_directories(${ZOFU_INCLUDE_DIR})
 # Program that generates a unit test driver given a set of modules
-set(ZOFU_DRIVER ${ZOFU_DIR}/bin/zofu-driver)
+#set(ZOFU_DRIVER ${ZOFU_DIR}/bin/zofu-driver)
 # My Zofu driver
-#set(ZOFU_DRIVER ${PROJECT_SOURCE_DIR}/utils/make_zofu_driver.py)
+set(ZOFU_DRIVER ${PROJECT_SOURCE_DIR}/utils/make_zofu_driver.py)
 
 
 # -------------------
@@ -137,49 +137,67 @@ enable_testing()
 # ask them to modify the driver generator
 
 
-list(APPEND geometry "geometry_tests.f90")
-list(APPEND maths "maths_functions_tests.f90")
+add_custom_command(
+        OUTPUT ${PROJECT_BINARY_DIR}/maths_driver.f90
+        COMMAND ${ZOFU_DRIVER} ${PROJECT_SOURCE_DIR}/src/maths/maths_utils_tests.f90
+        ${PROJECT_BINARY_DIR}/maths_driver.f90
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/maths/maths_utils_tests.f90
+        COMMENT "Generating ${PROJECT_BINARY_DIR}/maths_driver.f90")
 
-# List of strings with the names equal to lists
-list(APPEND unit_test_source "geometry" "maths")
+add_executable(test_maths)
 
-# TODO(Alex) Can probably remove the loop and define a macro that is called in
-# the cmakelists per subdirectory
+target_sources(test_maths
+        PRIVATE
+        src/maths/maths_utils_tests.f90
+        ${PROJECT_BINARY_DIR}/maths_driver.f90
+        )
 
-foreach(SUBDIR ${unit_test_source})
+add_dependencies(test_maths libunit_testing)
+target_link_libraries(test_maths ${ZOFU} libunit_testing)
 
-    # Because the unit_test_souce string entries are consistent with the lists
-    # of unit tests, one can also access the list contents... need to think about
-    # this if there are multiple tests per subdirectory
-    set(unit_test "${${SUBDIR}}")
-    get_filename_component(name_without_extension ${unit_test} NAME_WE)
-    message(${SUBDIR} " " ${unit_test} " " ${name_without_extension})
-
-    # Call ZOFU's driver utility to create a test driver, ${name_without_extension}_driver.f90,
-    # to run src/${SUBDIR}/${unit_test}
-    #TODO(Alex) Need to add a second test module to a directory.
-    add_custom_command(
-            OUTPUT ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90
-            COMMAND ${ZOFU_DRIVER} ${PROJECT_SOURCE_DIR}/src/${SUBDIR}/${unit_test}
-            ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90
-            DEPENDS ${PROJECT_SOURCE_DIR}/src/${SUBDIR}/${unit_test}
-            COMMENT "Generating ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90")
-    # or if using MPI:
-    #   PATH_TO/zofu-driver geometry_tests.f90 geometry_tests_driver.f90 --mpi
-
-    # Test driver is a program that is then linked to the the ZOFU unit test framework
-    # and our main code compiled as library, libunit_testing
-    add_executable(test_${name_without_extension})
-
-    target_sources(test_${name_without_extension}
-            PRIVATE
-            src/${SUBDIR}/${unit_test}
-            ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90
-            )
-
-    add_dependencies(test_${name_without_extension} libunit_testing)
-    target_link_libraries(test_${name_without_extension} ${ZOFU} libunit_testing)
-
-endforeach(SUBDIR)
+#list(APPEND geometry "geometry_tests.f90")
+#list(APPEND maths "maths_functions_tests.f90")
+#
+## List of strings with the names equal to lists
+#list(APPEND unit_test_source "geometry" "maths")
+#
+## TODO(Alex) Can probably remove the loop and define a macro that is called in
+## the cmakelists per subdirectory
+#
+#foreach(SUBDIR ${unit_test_source})
+#
+#    # Because the unit_test_souce string entries are consistent with the lists
+#    # of unit tests, one can also access the list contents... need to think about
+#    # this if there are multiple tests per subdirectory
+#    set(unit_test "${${SUBDIR}}")
+#    get_filename_component(name_without_extension ${unit_test} NAME_WE)
+#    message(${SUBDIR} " " ${unit_test} " " ${name_without_extension})
+#
+#    # Call ZOFU's driver utility to create a test driver, ${name_without_extension}_driver.f90,
+#    # to run src/${SUBDIR}/${unit_test}
+#    #TODO(Alex) Need to add a second test module to a directory.
+#    add_custom_command(
+#            OUTPUT ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90
+#            COMMAND ${ZOFU_DRIVER} ${PROJECT_SOURCE_DIR}/src/${SUBDIR}/${unit_test}
+#            ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90
+#            DEPENDS ${PROJECT_SOURCE_DIR}/src/${SUBDIR}/${unit_test}
+#            COMMENT "Generating ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90")
+#    # or if using MPI:
+#    #   PATH_TO/zofu-driver geometry_tests.f90 geometry_tests_driver.f90 --mpi
+#
+#    # Test driver is a program that is then linked to the the ZOFU unit test framework
+#    # and our main code compiled as library, libunit_testing
+#    add_executable(test_${name_without_extension})
+#
+#    target_sources(test_${name_without_extension}
+#            PRIVATE
+#            src/${SUBDIR}/${unit_test}
+#            ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90
+#            )
+#
+#    add_dependencies(test_${name_without_extension} libunit_testing)
+#    target_link_libraries(test_${name_without_extension} ${ZOFU} libunit_testing)
+#
+#endforeach(SUBDIR)
 
 
