@@ -17,9 +17,9 @@ message("-- Zofu library location: ${ZOFU}")
 set(ZOFU_INCLUDE_DIR "${ZOFU_DIR}/include")
 include_directories(${ZOFU_INCLUDE_DIR})
 # Program that generates a unit test driver given a set of modules
-# set(ZOFU_DRIVER ${ZOFU_DIR}/bin/zofu-driver)
+set(ZOFU_DRIVER ${ZOFU_DIR}/bin/zofu-driver)
 # My Zofu driver
-set(ZOFU_DRIVER ${PROJECT_SOURCE_DIR}/utils/make_zofu_driver.py)
+#set(ZOFU_DRIVER ${PROJECT_SOURCE_DIR}/utils/make_zofu_driver.py)
 
 
 # -------------------
@@ -76,6 +76,7 @@ target_sources(libunit_testing
         src/units_and_constants/precision.f90
 
         src/maths/maths_utils.f90
+        src/maths/maths_functions.f90
 
         src/geometry/geometry.f90
 
@@ -133,17 +134,17 @@ enable_testing()
 # Zofu has CMake, which is great
 # Zofu's driver utility only accepts one module argument =>
 # binary per test (more micro than I would have liked)
-# ask them to modify the driver generator OR Write my own driver generator (probably not too hard)
-#   Issue of then declaring the test object in each module => Write my own driver generator
-#   Can also have it check each module for errors and warn we're using non-standard zofu. Think about how to declare/initialise the test object
-# Manually write the drivers (got the issue of people forgetting to add tests)
-#
+# ask them to modify the driver generator
+
 
 list(APPEND geometry "geometry_tests.f90")
-list(APPEND maths "maths_utils_tests.f90")
+list(APPEND maths "maths_functions_tests.f90")
 
 # List of strings with the names equal to lists
 list(APPEND unit_test_source "geometry" "maths")
+
+# TODO(Alex) Can probably remove the loop and define a macro that is called in
+# the cmakelists per subdirectory
 
 foreach(SUBDIR ${unit_test_source})
 
@@ -152,9 +153,11 @@ foreach(SUBDIR ${unit_test_source})
     # this if there are multiple tests per subdirectory
     set(unit_test "${${SUBDIR}}")
     get_filename_component(name_without_extension ${unit_test} NAME_WE)
+    message(${SUBDIR} " " ${unit_test} " " ${name_without_extension})
 
     # Call ZOFU's driver utility to create a test driver, ${name_without_extension}_driver.f90,
     # to run src/${SUBDIR}/${unit_test}
+    #TODO(Alex) Need to add a second test module to a directory.
     add_custom_command(
             OUTPUT ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90
             COMMAND ${ZOFU_DRIVER} ${PROJECT_SOURCE_DIR}/src/${SUBDIR}/${unit_test}
