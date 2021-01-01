@@ -2,14 +2,16 @@ cmake_minimum_required(VERSION 3.15)
 project(unit_testing Fortran)
 enable_language(Fortran)
 
+# ------------------------
+# Unit Testing Framework
+# ------------------------
+
 # Required for finding unit test framework
 # I suspect Zofu should be a loaded lua module for pck-config variables to
 # get loaded into the environment
 #find_package(PkgConfig REQUIRED)
 #pkg_check_modules(ZOFU REQUIRED zofu>=1.0.0)
 
-
-# TODO(Alex) Write a FindZofu.cmake
 # Unit test library
 set(ZOFU_DIR "/Users/alexanderbuccheri/Programs/zofu/zofu_library")
 find_library(ZOFU NAME "libzofu" "zofu" REQUIRED HINTS "${ZOFU_DIR}/lib")
@@ -20,6 +22,14 @@ include_directories(${ZOFU_INCLUDE_DIR})
 #set(ZOFU_DRIVER ${ZOFU_DIR}/bin/zofu-driver)
 # My Zofu driver
 set(ZOFU_DRIVER ${PROJECT_SOURCE_DIR}/utils/make_zofu_driver.py)
+
+# TODO(Alex) Write a FindZofu.cmake
+# TODO(Alex) Zofu has CMake, which is great. Use that instead of building with MESON
+# TODO(Alex) Ask them to modify the driver generator to parse test routines from
+# multiple modules
+# TODO(Alex) Ask Zofu author if he wants to post a link to this repo, demonstrating
+# how Zofu can be used
+
 
 
 # -------------------
@@ -123,64 +133,78 @@ target_link_libraries(unit_testing_exe
 # -------------------
 enable_testing()
 
-# List with name equal to an src subdirectory, containing all unit tests in the subdirectory
-# No assumption is made regarding unit test names
-# These could go in their respective CMake directories
+# TODO(Alex) Move this function
+# TODO(Alex) When this function gets moved, look into how to pass ${ZOFU_DRIVER},
+# and the libraries: ${ZOFU} and libunit_testing, to it
 
-## https://stackoverflow.com/questions/2937128/cmake-add-custom-command-not-being-run
-# TODO(Alex) Add a second test module to a given subdirectory, Only want one test driver per subdirectory
-# One could in principle, just write the test driver per module... nicer to automate though
+function(create_unit_test_executable)
+    # Set up a unit test executable with the name `test_SUBDIR`
+    # This function assumes the fortran ZOFU unit test framework, although this
+    # can easily be modified by changing the add_custom_command arguments
 
-# Zofu has CMake, which is great
-# Zofu's driver utility only accepts one module argument =>
-# binary per test (more micro than I would have liked)
-# ask them to modify the driver generator
+    # Define the CMake function signature keywords and their types
+    # Of the general form: set(type KEYWORD)
+    set(options)                                    # Binary options (none for this function)
+    set(oneValueArgs SUBDIR)                        # Single-value options
+    set(multiValueArgs UNIT_TESTS)                  # Multi-value options: Multiple arguments or list/s
+    # TODO(Alex) Use a better prefix
+    cmake_parse_arguments(MY_FUNC                   # Prefix for all function arguments within function body
+                          "${options}"              # Assign the binary options for the function
+                          "${oneValueArgs}"         # Assign the single-value options for the function
+                          "${multiValueArgs}"       # Assign the multi-value options for the function
+                          ${ARGV})                  # ${ARGN} or ${ARGV}. (I think) ${ARGV} means accept a variable
+                                                    # number of arguments, which one want for a list of no fixed size
+
+    list(TRANSFORM MY_FUNC_UNIT_TESTS PREPEND "${PROJECT_SOURCE_DIR}/src/${MY_FUNC_SUBDIR}/")
+
+    # Runs the unix command specified by COMMAND
+    # Create a unit test driver that runs all tests in the respective subdirectory
+    add_custom_command(
+            OUTPUT ${PROJECT_BINARY_DIR}/${MY_FUNC_SUBDIR}_driver.f90
+            COMMAND ${ZOFU_DRIVER} ${MY_FUNC_UNIT_TESTS} ${PROJECT_BINARY_DIR}/${MY_FUNC_SUBDIR}_driver.f90
+            COMMENT "Generating ${PROJECT_BINARY_DIR}/${MY_FUNC_SUBDIR}_driver.f90")
+
+    # Create the test driver executable and add module targets:
+    # all unit test modules and the test driver
+    add_executable(test_${MY_FUNC_SUBDIR})
+
+    target_sources(test_${MY_FUNC_SUBDIR}
+             PRIVATE
+             ${MY_FUNC_UNIT_TESTS}
+             ${PROJECT_BINARY_DIR}/${MY_FUNC_SUBDIR}_driver.f90
+            )
+    # Ensure our library gets compiled if one attempts to build the unit test executable
+    add_dependencies(test_${MY_FUNC_SUBDIR} libunit_testing)
+
+    # Link the libraries that the unit test executable will dependent on
+    # We assume that ZOFU is built and found by CMake at this point
+    target_link_libraries(test_${MY_FUNC_SUBDIR} ${ZOFU} libunit_testing)
+
+endfunction()
+
+
+# A list containing all unit test modules within a given subdirectory
+# The naming convention for a unit test of the source `module_name.f90` is
+# `module_name_tests.f90`, although one is not required to use this
+list(APPEND maths_unit_tests "maths_functions_tests.f90"
+                             "maths_utils_tests.f90")
+
+list(APPEND geometry_unit_tests "geometry_tests.f90")
+
+create_unit_test_executable(SUBDIR "maths" UNIT_TESTS ${maths_unit_tests})
+
+create_unit_test_executable(SUBDIR "geometry" UNIT_TESTS ${geometry_unit_tests})
+
+
+#add_subdirectory(src/geometry)
+#add_subdirectory(src/maths)
 
 
 
-#list(APPEND geometry "geometry_tests.f90")
-#list(APPEND maths "maths_functions_tests.f90")
-#
-## List of strings with the names equal to lists
-#list(APPEND unit_test_source "geometry" "maths")
-#
-## TODO(Alex) Can probably remove the loop and define a macro that is called in
-## the cmakelists per subdirectory
-#
-#foreach(SUBDIR ${unit_test_source})
-#
-#    # Because the unit_test_souce string entries are consistent with the lists
-#    # of unit tests, one can also access the list contents... need to think about
-#    # this if there are multiple tests per subdirectory
-#    set(unit_test "${${SUBDIR}}")
-#    get_filename_component(name_without_extension ${unit_test} NAME_WE)
-#    message(${SUBDIR} " " ${unit_test} " " ${name_without_extension})
-#
-#    # Call ZOFU's driver utility to create a test driver, ${name_without_extension}_driver.f90,
-#    # to run src/${SUBDIR}/${unit_test}
-#    #TODO(Alex) Need to add a second test module to a directory.
-#    add_custom_command(
-#            OUTPUT ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90
-#            COMMAND ${ZOFU_DRIVER} ${PROJECT_SOURCE_DIR}/src/${SUBDIR}/${unit_test}
-#            ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90
-#            DEPENDS ${PROJECT_SOURCE_DIR}/src/${SUBDIR}/${unit_test}
-#            COMMENT "Generating ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90")
-#    # or if using MPI:
-#    #   PATH_TO/zofu-driver geometry_tests.f90 geometry_tests_driver.f90 --mpi
-#
-#    # Test driver is a program that is then linked to the the ZOFU unit test framework
-#    # and our main code compiled as library, libunit_testing
-#    add_executable(test_${name_without_extension})
-#
-#    target_sources(test_${name_without_extension}
-#            PRIVATE
-#            src/${SUBDIR}/${unit_test}
-#            ${PROJECT_BINARY_DIR}/${name_without_extension}_driver.f90
-#            )
-#
-#    add_dependencies(test_${name_without_extension} libunit_testing)
-#    target_link_libraries(test_${name_without_extension} ${ZOFU} libunit_testing)
-#
-#endforeach(SUBDIR)
+
+
+
+
+
 
 
