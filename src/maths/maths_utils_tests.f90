@@ -1,4 +1,5 @@
-! Zofu
+! Unit test uses the Zofu unit testing framework
+!
 ! Each test case subroutine must have a name beginning with test_.
 ! This convention allows the test module to contain other subroutines which are not tests,
 ! but may be called by the test case subroutines.

@@ -13,12 +13,6 @@ module geometry_tests
 
     type(unit_test_type) :: geom_test
 
-
-!    call geom_test%init()
-!    call geom_test%run(test_distance_matrix, &
-!            '! Test distance matrix when passing an array of positions')
-!    call geom_test%summary()
-
 contains
 
     subroutine test_distance_matrix(geom_test)
