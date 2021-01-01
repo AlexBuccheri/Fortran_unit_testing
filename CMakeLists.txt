@@ -136,26 +136,7 @@ enable_testing()
 # binary per test (more micro than I would have liked)
 # ask them to modify the driver generator
 
-list(APPEND maths_unit_tests "maths_functions_tests.f90"
-                             "maths_utils_tests.f90")
 
-list(TRANSFORM maths_unit_tests PREPEND "${PROJECT_SOURCE_DIR}/src/maths/")
-
-add_custom_command(
-        OUTPUT ${PROJECT_BINARY_DIR}/maths_driver.f90
-        COMMAND ${ZOFU_DRIVER} ${maths_unit_tests} ${PROJECT_BINARY_DIR}/maths_driver.f90
-        COMMENT "Generating ${PROJECT_BINARY_DIR}/maths_driver.f90")
-
-add_executable(test_maths)
-
-target_sources(test_maths
-        PRIVATE
-        ${maths_unit_tests}
-        ${PROJECT_BINARY_DIR}/maths_driver.f90
-        )
-
-add_dependencies(test_maths libunit_testing)
-target_link_libraries(test_maths ${ZOFU} libunit_testing)
 
 #list(APPEND geometry "geometry_tests.f90")
 #list(APPEND maths "maths_functions_tests.f90")
