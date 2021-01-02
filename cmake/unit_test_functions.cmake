@@ -22,16 +22,20 @@ function(create_unit_test_executable)
                                                     # number of arguments, which one want for a list of no fixed size
 
     # Full file path
-    list(TRANSFORM MY_FUNC_UNIT_TESTS PREPEND "${PROJECT_SOURCE_DIR}/src/${MY_FUNC_SUBDIR}/")
+    list(TRANSFORM MY_FUNC_UNIT_TESTS PREPEND "${CMAKE_SOURCE_DIR}/src/${MY_FUNC_SUBDIR}/")
+
+    # Create a directory in the build folder to place generated test drivers
+    set(TEST_DRIVER_DIR ${PROJECT_BINARY_DIR}/test_drivers)
+    file(MAKE_DIRECTORY ${TEST_DRIVER_DIR})
 
     # Runs the unix command specified by COMMAND:
     # Create a unit test driver that runs all tests in the respective subdirectory
     # using ${ZOFU_DRIVER} (which must be my custom script, not the binary supplied with the library)
     IF(NOT ${MY_FUNC_MPI_ENABLED})
     add_custom_command(
-            OUTPUT ${PROJECT_BINARY_DIR}/${MY_FUNC_SUBDIR}_driver.f90
-            COMMAND ${ZOFU_DRIVER} ${MY_FUNC_UNIT_TESTS} ${PROJECT_BINARY_DIR}/${MY_FUNC_SUBDIR}_driver.f90
-            COMMENT "Generating ${PROJECT_BINARY_DIR}/${MY_FUNC_SUBDIR}_driver.f90")
+            OUTPUT ${TEST_DRIVER_DIR}/${MY_FUNC_SUBDIR}_driver.f90
+            COMMAND ${ZOFU_DRIVER} ${MY_FUNC_UNIT_TESTS} ${TEST_DRIVER_DIR}/${MY_FUNC_SUBDIR}_driver.f90
+            COMMENT "Generating ${TEST_DRIVER_DIR}/${MY_FUNC_SUBDIR}_driver.f90")
     ELSE()
         # TODO(Alex) Extend to work with MPI
         message(FATAL_ERROR "Custom Zofu driver has not yet been extended to work with MPI" )
@@ -41,10 +45,16 @@ function(create_unit_test_executable)
     # all unit test modules and the test driver
     add_executable(test_${MY_FUNC_SUBDIR})
 
+    # Set directory in which unit tests are built in
+    set_target_properties(test_${MY_FUNC_SUBDIR}
+            PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/unit_tests"
+            )
+
     target_sources(test_${MY_FUNC_SUBDIR}
             PRIVATE
             ${MY_FUNC_UNIT_TESTS}
-            ${PROJECT_BINARY_DIR}/${MY_FUNC_SUBDIR}_driver.f90
+            ${TEST_DRIVER_DIR}/${MY_FUNC_SUBDIR}_driver.f90
             )
     # Ensure our library gets compiled if one attempts to build the unit test executable
     add_dependencies(test_${MY_FUNC_SUBDIR} libunit_testing)
@@ -54,8 +64,8 @@ function(create_unit_test_executable)
     target_link_libraries(test_${MY_FUNC_SUBDIR} ${ZOFU} libunit_testing)
 
     # Allows test executable `test_${MY_FUNC_SUBDIR}` to be run with ctest
-    # TODO(Alex) Update this COMMAND path when I put things in sensible places
+    # TODO(Alex) Look at CONFIGURATION of add_test to set up fast and slow tests
     add_test(NAME UNITTEST_${MY_FUNC_SUBDIR}
-            COMMAND ${PROJECT_BINARY_DIR}/test_${MY_FUNC_SUBDIR})
+             COMMAND ${CMAKE_BINARY_DIR}/unit_tests/test_${MY_FUNC_SUBDIR})
 
 endfunction()
