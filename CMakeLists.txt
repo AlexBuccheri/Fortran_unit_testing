@@ -200,31 +200,30 @@ endif()
 # (same name, different extensions), with the latter to perform the asserts.
 # These are written in tests/
 # In principle, one could write the input in the python file (which would be cleaner)
+set(MOLECULE_APP_TESTS co2_distance_matrix)
 
-#set(MOLECULE_APP_TESTS co2_distance_matrix)
-#
-#foreach(INPUT ${MOLECULE_APP_TESTS})
-#
-#    # Serial tests for MOLECULE_APP_TESTS
-#    add_test(
-#            NAME APPLICATIONTEST_SERIAL_${INPUT}
-#            COMMAND python3 tests/${INPUT}.py ${CMAKE_BUILD_TYPE}
-#            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests
-#            # CONFIGURATIONS "" ${FAST_PRIVATE} # If one wishes to set different ctest targets
-#    )
-#
-#    # Can also set useful test properties
-#    set_tests_properties(APPLICATIONTEST_SERIAL_${INPUT}
-#            PROPERTIES LABELS MOLECULE_SERIAL   # Assign a label when one has multiple methods to test
-#            # WILL_FAIL TRUE                    # When one intentionally writes a failing test
-#            )
-#
-#    # MPI + threaded tests
-#    # add_test would look the same but one would pass a flag to the python runner:
-#    # COMMAND python3 tests/${INPUT}.py -mpi tests/${INPUT}.in
-#    # This simply depends on how the test framework is set up
-#
-#endforeach()
+foreach(INPUT ${MOLECULE_APP_TESTS})
+
+    # Serial tests for MOLECULE_APP_TESTS
+    add_test(
+            NAME APPLICATIONTEST_SERIAL_${INPUT}
+            COMMAND python3 tests/${INPUT}.py ${CMAKE_BUILD_TYPE}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests
+            # CONFIGURATIONS "" ${FAST_PRIVATE} # If one wishes to set different ctest targets
+    )
+
+    # Can also set useful test properties
+    set_tests_properties(APPLICATIONTEST_SERIAL_${INPUT}
+            PROPERTIES LABELS MOLECULE_SERIAL   # Assign a label when one has multiple methods to test
+            # WILL_FAIL TRUE                    # When one intentionally writes a failing test
+            )
+
+    # MPI + threaded tests
+    # add_test would look the same but one would pass a flag to the python runner:
+    # COMMAND python3 tests/${INPUT}.py -mpi tests/${INPUT}.in
+    # This simply depends on how the test framework is set up
+
+endforeach()
 
 
 # Can create custom target commands with:
