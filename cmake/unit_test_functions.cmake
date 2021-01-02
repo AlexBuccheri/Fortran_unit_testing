@@ -21,7 +21,7 @@ function(create_unit_test_executable)
             ${ARGV})                                # ${ARGN} or ${ARGV}. (I think) ${ARGV} means accept a variable
                                                     # number of arguments, which one want for a list of no fixed size
 
-    # Full file path
+    # Prepend the UNIT_TESTS list with their full file path
     list(TRANSFORM MY_FUNC_UNIT_TESTS PREPEND "${CMAKE_SOURCE_DIR}/src/${MY_FUNC_SUBDIR}/")
 
     # Create a directory in the build folder to place generated test drivers
@@ -64,7 +64,7 @@ function(create_unit_test_executable)
     target_link_libraries(test_${MY_FUNC_SUBDIR} ${ZOFU} libunit_testing)
 
     # Allows test executable `test_${MY_FUNC_SUBDIR}` to be run with ctest
-    # TODO(Alex) Look at CONFIGURATION of add_test to set up fast and slow tests
+    # All unit tests assumed to be FAST, hence no specific CONFIGURATIONs
     add_test(NAME UNITTEST_${MY_FUNC_SUBDIR}
              COMMAND ${CMAKE_BINARY_DIR}/unit_tests/test_${MY_FUNC_SUBDIR})
 
