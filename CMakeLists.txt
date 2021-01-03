@@ -98,10 +98,11 @@ set_target_properties(libunit_testing
 # Executable
 # -------------------
 add_executable(unit_testing_exe)
+set(EXE_OUTPUT_NAME unit_testing)
 
 set_target_properties(unit_testing_exe
         PROPERTIES
-        RUNTIME_OUTPUT_NAME unit_testing
+        RUNTIME_OUTPUT_NAME ${EXE_OUTPUT_NAME}
         VERSION 1.0)
 
 # TODO(Alex) Should I add all source as a target, or is there no need having compiled
@@ -124,7 +125,6 @@ set_target_properties(unit_testing_exe
 # --------------------------
 # Install
 # --------------------------
-
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX ${default_install_prefix}
             CACHE STRING "Choose the installation directory. Default location is ${default_install_prefix}"
@@ -162,6 +162,7 @@ list(APPEND geometry_unit_tests "geometry_tests.f90"       # Unit tests for geom
 #create_unit_test_executable(MPI_ENABLED SUBDIR "maths" UNIT_TESTS ${maths_unit_tests} )
 
 # Generates a unit test executable using the Zofu unit testing framework
+# Arguments are the relative unit test location SUBDIR and a list of UNIT_TESTS
 create_unit_test_executable(SUBDIR "maths" UNIT_TESTS ${maths_unit_tests})
 
 create_unit_test_executable(SUBDIR "geometry" UNIT_TESTS ${geometry_unit_tests})
@@ -200,30 +201,30 @@ endif()
 # (same name, different extensions), with the latter to perform the asserts.
 # These are written in tests/
 # In principle, one could write the input in the python file (which would be cleaner)
-set(MOLECULE_APP_TESTS co2_distance_matrix)
-
-foreach(INPUT ${MOLECULE_APP_TESTS})
-
-    # Serial tests for MOLECULE_APP_TESTS
-    add_test(
-            NAME APPLICATIONTEST_SERIAL_${INPUT}
-            COMMAND python3 tests/${INPUT}.py ${CMAKE_BUILD_TYPE}
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests
-            # CONFIGURATIONS "" ${FAST_PRIVATE} # If one wishes to set different ctest targets
-    )
-
-    # Can also set useful test properties
-    set_tests_properties(APPLICATIONTEST_SERIAL_${INPUT}
-            PROPERTIES LABELS MOLECULE_SERIAL   # Assign a label when one has multiple methods to test
-            # WILL_FAIL TRUE                    # When one intentionally writes a failing test
-            )
-
-    # MPI + threaded tests
-    # add_test would look the same but one would pass a flag to the python runner:
-    # COMMAND python3 tests/${INPUT}.py -mpi tests/${INPUT}.in
-    # This simply depends on how the test framework is set up
-
-endforeach()
+#set(MOLECULE_APP_TESTS co2_distance_matrix)
+#
+#foreach(INPUT ${MOLECULE_APP_TESTS})
+#
+#    # Serial tests for MOLECULE_APP_TESTS
+#    add_test(
+#            NAME APPLICATIONTEST_SERIAL_${INPUT}
+#            COMMAND python3 tests/${INPUT}.py ${CMAKE_BUILD_TYPE} ${EXE_OUTPUT_NAME}
+#            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests
+#            # CONFIGURATIONS "" ${FAST_PRIVATE} # If one wishes to set different ctest targets
+#    )
+#
+#    # Can also set useful test properties
+#    set_tests_properties(APPLICATIONTEST_SERIAL_${INPUT}
+#            PROPERTIES LABELS MOLECULE_SERIAL   # Assign a label when one has multiple methods to test
+#            # WILL_FAIL TRUE                    # When one intentionally writes a failing test
+#            )
+#
+#    # MPI + threaded tests
+#    # add_test would look the same but one would pass a flag to the python runner:
+#    # COMMAND python3 tests/${INPUT}.py -mpi tests/${INPUT}.in
+#    # This simply depends on how the test framework is set up
+#
+#endforeach()
 
 
 # Can create custom target commands with:
