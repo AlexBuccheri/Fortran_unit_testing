@@ -11,15 +11,25 @@ class MyTestCase(unittest.TestCase):
     """
 
     # Specify input file or generate the input file
-    input = 'c02_distance_matrix.in'
+    input_name = 'co2_distance_matrix.in'
+
+    # http://www.chm.bris.ac.uk/~paulmay/temp/pcc/co2symstretch.htm
+    co2_xyz = """3 
+  
+C  0.0000000   0.0000000   0.0000000
+O  0.0000000   0.0000000   1.5140760
+O  0.0000000   0.0000000  -1.5140760
+    """
+    fid = open(input_name, "w")
+    fid.write(co2_xyz)
+    fid.close()
 
     # Get executable location and run settings
     run_settings = parse_test_options()
 
-    # Run the code
-    std_out = run_executable(run_settings, input)
+    # Run the code and return output to stdout
+    std_out = run_executable(run_settings, input_name)
 
-    # Parse output: Result written to std out
 
     # An application test
     def test_co2_distance_matrix(self):
