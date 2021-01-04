@@ -79,6 +79,10 @@ target_sources(libunit_testing
         src/geometry/geometry.f90
 
         src/asserts/asserts.F90
+        src/asserts/errors_warnings.f90
+
+        src/parse/read.f90
+        src/parse/command_line.f90
         )
 
 # Set fortran pre-processing variable from CMake -DDEBUG flag
