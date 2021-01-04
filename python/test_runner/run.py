@@ -25,7 +25,7 @@ def parse_test_options():
         16.4.3. The add_argument() method¶
     for more details on argparse.
 
-    TODO Consider replacing hybrid with omp mpi
+    TODO(Alex) Consider replacing hybrid with omp mpi
 
     :return: args, parsed arguments
     """
@@ -101,7 +101,7 @@ def parse_test_options():
     return args
 
 
-def run_executable(args, input) -> dict:
+def run_executable(args, input_file) -> dict:
     """
     Run an executable. Assumes CMake build system
 
@@ -113,17 +113,26 @@ def run_executable(args, input) -> dict:
     :return: Run code and return standard output
     """
 
+    set_omp = ['export OMP_NUM_THREADS=' + str(args.omp_num_threads)]
+    mpi_run = ['mpirun', '-np']
+    run_command = [args.exe, input_file]
+
     if 'serial' or 'omp' in args.build_type:
-        run_command = [args.exe, input]
+        # Need to get set_omp to work
+        #full_run_command = set_omp + run_command
+        full_run_command = run_command
+
     elif 'mpi' or 'hybrid' in args.build_type:
-        # Refresh the ordering + no idea if this will work
-        run_command = ['mpirun', './' + args.exe, '-np' + str(args.np), input]
+        quit('Need to get set_omp to work')
+        #full_run_command = set_omp + mpi_run + run_command
+
+    print(full_run_command)
+    quit('Quit after printing run command - fix subprocess')
 
     try:
-        # TODO ALEX Can this perform MPI run?
-        # TODO EXPORT OMP_NUM_THREADS = args.omp_num_threads
-        # TODO Currently do nothing with STDERR
-        return subprocess.check_output(run_command, stderr=subprocess.DEVNULL) #, stderr=subprocess.STDOUT).decode("utf-8")
+         process = subprocess.run(full_run_command, stderr=subprocess.PIPE)
     except subprocess.CalledProcessError:  # as error:
-        #print("subprocess error:", error.returncode, "found:", error.output)
-        return None
+         pass
+         #print("subprocess error:", error.returncode, "found:", error.output)
+
+    return process
