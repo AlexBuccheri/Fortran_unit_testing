@@ -57,8 +57,6 @@ contains
         ! Rest of file
         do ia = 1, n_atoms
             read(unit, *) species(ia), positions(1:3, ia)
-            write(*, *) species(ia)
-            write(*, *) positions(1:3, ia)
         end do
 
         close(unit)
