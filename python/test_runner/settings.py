@@ -45,7 +45,7 @@ def set_full_executable(input_build_type: list, exe: str) -> str:
     directories.
 
     :param input_build_type: List of build type strings
-    :param exe:  Executable name str
+    :param exe: Executable name str
     :return: full path to executable str
     """
 

@@ -2,6 +2,7 @@ import subprocess
 import argparse
 
 from python.test_runner import settings
+from python.parse.read_stdout import ResultType
 
 
 def parse_test_options():
@@ -12,10 +13,10 @@ def parse_test_options():
 
     Written to be used in conjunction with CMake variables. Some examples:
     Debug serial
-        python3 test.py --build_type ${CMAKE_BUILD_TYPE} "serial" --exe ${EXE_OUTPUT_NAME}
+        pytest -s tests/test.py --build_type ${CMAKE_BUILD_TYPE} "serial" --exe ${EXE_OUTPUT_NAME}
 
     MPI+openMP release
-        python3 test.py --build_type ${CMAKE_BUILD_TYPE} "hybrid" --exe ${EXE_OUTPUT_NAME}
+        pytest -s tests/test.py --build_type ${CMAKE_BUILD_TYPE} "hybrid" --exe ${EXE_OUTPUT_NAME}
             --np 2 --omp_num_threads 2
 
     If the number of processes (np) or number of OMP threads (omp_num_threads)
@@ -118,21 +119,37 @@ def run_executable(args, input_file) -> dict:
     run_command = [args.exe, input_file]
 
     if 'serial' or 'omp' in args.build_type:
-        # Need to get set_omp to work
+        # TODO(Alex) Need to get set_omp to work
         #full_run_command = set_omp + run_command
         full_run_command = run_command
 
     elif 'mpi' or 'hybrid' in args.build_type:
+        # TODO(Alex) Get MPI working
         quit('Need to get set_omp to work')
-        #full_run_command = set_omp + mpi_run + run_command
-
-    print(full_run_command)
-    quit('Quit after printing run command - fix subprocess')
+        full_run_command = set_omp + mpi_run + run_command
 
     try:
-         process = subprocess.run(full_run_command, stderr=subprocess.PIPE)
-    except subprocess.CalledProcessError:  # as error:
-         pass
-         #print("subprocess error:", error.returncode, "found:", error.output)
+         process = subprocess.run(full_run_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+         # Return bytes obj as a list of strings, split w.r.t newline
+         return process.stdout.decode("utf-8").split('\n')
 
-    return process
+    # TODO(Alex) Switch from check_output to run. Look into how to assess error
+    except subprocess.CalledProcessError:
+        print("subprocess error:", process.returncode, "found:", process.output)
+        return None
+
+
+def setup(input_name: str):
+    """
+    Set up a job, run it and return the results
+    :param input_name:
+    :return: Results in ResultType object
+    """
+    # Get executable location and run settings
+    run_settings = parse_test_options()
+
+    # Run the code and return output to stdout
+    stdout = run_executable(run_settings, input_name)
+
+    # Parse stdout into results object and return
+    return ResultType(stdout)

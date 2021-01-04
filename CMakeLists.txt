@@ -212,7 +212,7 @@ endif()
 #    # Serial tests for MOLECULE_APP_TESTS
 #    add_test(
 #            NAME APPLICATIONTEST_SERIAL_${INPUT}
-#            COMMAND python3 tests/${INPUT}.py ${CMAKE_BUILD_TYPE} ${EXE_OUTPUT_NAME}
+#            COMMAND pytest -s tests/${INPUT}.py --build_type ${CMAKE_BUILD_TYPE} --exe ${EXE_OUTPUT_NAME}
 #            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests
 #            # CONFIGURATIONS "" ${FAST_PRIVATE} # If one wishes to set different ctest targets
 #    )
