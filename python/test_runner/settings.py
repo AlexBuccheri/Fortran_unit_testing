@@ -55,7 +55,7 @@ def set_full_executable(input_build_type: list, exe: str) -> str:
     assert len(build_type) == 1, \
         "Either zero, or more than one build type is specified in input_build_type"
 
-    return "cmake-build-" + build_type[0] + "/bin/" + exe
+    return "../cmake-build-" + build_type[0] + "/bin/" + exe
 
 
 def build_type_string_to_enum(input_build_type: list) -> BuildType:

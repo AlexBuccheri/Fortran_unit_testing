@@ -5,6 +5,10 @@ import numpy as np
 import scipy.spatial
 
 # Our python packages: Test runner for this project
+# TODO(Alex) Think about the best way to deal with this
+# https://stackoverflow.com/questions/16114391/adding-directory-to-sys-path-pythonpath
+import sys
+sys.path.insert(0,'/Users/alexanderbuccheri/CLionProjects/unit_testing/')
 from python.test_runner.run import setup
 
 

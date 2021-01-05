@@ -189,6 +189,7 @@ if (Python3_FOUND)
     # The pytest framework makes it easy to write small tests, yet scales to support
     # complex functional testing for applications and libraries
     find_python_module(pytest)
+    find_python_module(unittest)
 
     # MessagePack is an efficient binary serialization format. It lets you
     # exchange data among multiple languages like JSON. But it's faster and smaller.
@@ -198,41 +199,39 @@ if (Python3_FOUND)
     find_python_module(msgpack)
 endif()
 
-
 # A set of application tests
-# As tests are written, they can be added to the MOLECULE_APP_TESTS list
-# or added to a new list
+# New tests can either be added to the MOLECULE_APP_TESTS list or added to a new list
 
 # `co2_distance_matrix` is a test. It should have an input file and python file
 # (same name, different extensions), with the latter to perform the asserts.
-# These are written in tests/
 # In principle, one could write the input in the python file (which would be cleaner)
-#set(MOLECULE_APP_TESTS co2_distance_matrix)
-#
-#foreach(INPUT ${MOLECULE_APP_TESTS})
-#
-#    # Serial tests for MOLECULE_APP_TESTS
-#    add_test(
-#            NAME APPLICATIONTEST_SERIAL_${INPUT}
-#            COMMAND pytest -s tests/${INPUT}.py --build_type ${CMAKE_BUILD_TYPE} --exe ${EXE_OUTPUT_NAME}
-#            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests
-#            # CONFIGURATIONS "" ${FAST_PRIVATE} # If one wishes to set different ctest targets
-#    )
-#
-#    # Can also set useful test properties
-#    set_tests_properties(APPLICATIONTEST_SERIAL_${INPUT}
-#            PROPERTIES LABELS MOLECULE_SERIAL   # Assign a label when one has multiple methods to test
-#            # WILL_FAIL TRUE                    # When one intentionally writes a failing test
-#            )
-#
-#    # MPI + threaded tests
-#    # add_test would look the same but one would pass a flag to the python runner:
-#    # COMMAND python3 tests/${INPUT}.py -mpi tests/${INPUT}.in
-#    # This simply depends on how the test framework is set up
-#
-#endforeach()
+
+set(MOLECULE_APP_TESTS co2_distance_matrix)
+
+foreach(INPUT ${MOLECULE_APP_TESTS})
+    # Serial tests for MOLECULE_APP_TESTS
+    # These are written and ran in tests/
+    add_test(
+            NAME APPLICATIONTEST_SERIAL_${INPUT}
+            COMMAND pytest -s ${INPUT}.py --build_type "serial" ${CMAKE_BUILD_TYPE} --exe ${EXE_OUTPUT_NAME}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests
+            # CONFIGURATIONS "" ${FAST_PRIVATE} # If one wishes to set different ctest targets
+    )
+
+    # Can also set useful test properties
+    set_tests_properties(APPLICATIONTEST_SERIAL_${INPUT}
+            PROPERTIES LABELS MOLECULE_SERIAL   # Assign a label for extra ctest timing info
+            WILL_FAIL FALSE                     # If TRUE, allows one intentionally write a failing test OR flag issues
+            )
+endforeach()
 
 
+# MPI + threaded tests
+# add_test would look the same but with different flags
+# Defaults are set for threads and cores, however they can also be specified
+# COMMAND pytest -s ${INPUT}.py --build_type "hybrid" ${CMAKE_BUILD_TYPE} --exe ${EXE_OUTPUT_NAME}
+
+# TODO(Alex)
 # Can create custom target commands with:
 # add_custom_target( ctest_all ctest -C all )
 # Use this to split app tests, unit tests, slow tests and fast tests
