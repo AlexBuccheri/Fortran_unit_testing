@@ -7,8 +7,9 @@ import scipy.spatial
 # Our python packages: Test runner for this project
 # TODO(Alex) Think about the best way to deal with this
 # https://stackoverflow.com/questions/16114391/adding-directory-to-sys-path-pythonpath
+# https://stackoverflow.com/questions/10095037/why-use-sys-path-appendpath-instead-of-sys-path-insert1-path
 import sys
-sys.path.insert(0,'/Users/alexanderbuccheri/CLionProjects/unit_testing/')
+sys.path.insert(1,'/Users/alexanderbuccheri/CLionProjects/unit_testing/')
 from python.test_runner.run import setup
 
 
