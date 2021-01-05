@@ -6,7 +6,7 @@ from python.test_runner import settings
 from python.parse.read_stdout import ResultType
 
 
-def parse_test_options(argsv):
+def parse_test_options(argv):
     """
     Parse test options passed directly to python using argparse.
     Where settings are not specified, default values are assigned.
@@ -28,17 +28,13 @@ def parse_test_options(argsv):
     for more details on argparse.
 
     TODO(Alex) Consider replacing hybrid with omp mpi
+    TODO(Alex) add_argument settings should be conftest.py settings, else
+    defining the same things in two places
 
+    :param: argsv, subset of sys.argv, which should only contain the options below
     :return: args, parsed arguments
     """
     parser = argparse.ArgumentParser(description='Run an application test.')
-    # TODO(Alex)If I'm passing argsv to this routine, this can be REMOVED!
-    # as it's for pytest, not my test
-    parser.add_argument('-s',
-                        type=str,
-                        action='store',
-                        help='pytest file')
-
 
     parser.add_argument('--build_type',
                         type=str,
@@ -67,7 +63,7 @@ def parse_test_options(argsv):
                         default=None,
                         help='Number of openMP threads')
 
-    args = parser.parse_args(argsv)
+    args = parser.parse_args(argv)
 
     if 'serial' in args.build_type:
         assert args.np is None, "--np should not be set with serial build type"
@@ -108,8 +104,6 @@ def parse_test_options(argsv):
     # print(args)
 
     return args
-
-
 
 
 def run_executable(args, input_file) -> dict:
@@ -155,8 +149,10 @@ def setup(input_name: str):
     :param input_name:
     :return: Results in ResultType object
     """
+    # TODO(Alex) Get parsed command-line options used by the test runner (and not pytest)
+    # rather than passing a hard-coded indexing, assuming the number of pytest args
+
     # Get executable location and run settings
-    # TODO(Alex) Make generic
     run_settings = parse_test_options(sys.argv[3:])
 
     # Run the code and return output to stdout

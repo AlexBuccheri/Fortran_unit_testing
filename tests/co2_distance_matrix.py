@@ -28,24 +28,19 @@ O  0.0000000   0.0000000  -1.5140760
     return
 
 
-# TODO(Alex) Issue with passing command-line options to arg parse
-# such that I can pass my custom command-line args to pytest
-# https://docs.pytest.org/en/stable/parametrize.html#basic-pytest-generate-tests-example
-# https://stackoverflow.com/questions/40880259/how-to-pass-arguments-in-pytest-by-command-line
-
 class MyTestCase(unittest.TestCase):
     """
     Application test for CO2 distance matrix
     To run manually:
       pytest -s tests/co2_distance_matrix.py --build_type serial debug --exe unit_testing
-
     """
 
     def test_co2_distance_matrix(self):
         """
         Test description: Molecular CO2 distance matrix
+
+
         :param self: pytest object
-        :param result: ResultType object from parsing fortran code output
         """
         # Specify input file
         input_name = 'co2_distance_matrix.in'
@@ -73,13 +68,6 @@ class MyTestCase(unittest.TestCase):
                             [0.0000000,   0.0000000,   1.5140760],
                             [0.0000000,   0.0000000,  -1.5140760]])
         ref_distance_matrix = scipy.spatial.distance_matrix(ref_pos, ref_pos)
-
-
-        # Test-driven development
-        # Shows that the two distance matrices differ -> Looks like
-        # a bug in my fortran code
-        print(result.distance_matrix)
-        print(ref_distance_matrix)
 
         self.assertTrue(np.allclose(result.distance_matrix,
                                     ref_distance_matrix,

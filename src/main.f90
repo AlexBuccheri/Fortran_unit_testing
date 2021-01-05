@@ -10,12 +10,14 @@ program main
     real(dp), allocatable :: positions(:, :)
     character(len=len_max_sym), allocatable :: species(:)
     real(dp), allocatable :: d(:, :)
+    integer :: i
 
 
     ! Main code
     write(*, *) '! Simple demo code that reads in an xyz file and computes a distance matrix'
     call args%parse()
     call read_xyz(args%input_file, positions, species)
+
     d = distance_matrix(positions)
     call output_distance_matrix(d)
 

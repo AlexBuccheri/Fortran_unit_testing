@@ -39,6 +39,7 @@ contains
         real(wp), allocatable :: d(:,:)
         integer :: ia, ja, n_atoms
 
+        ! This wouldn't catch passing a set of 3 positions with the indices switched
         call assert(size(positions, 1) == 3, &
                 message = "Distance matrix expects atomic coordinates stored (3, n_atoms)")
 
@@ -47,7 +48,7 @@ contains
 
         do ia = 1, n_atoms
             do ja = ia, n_atoms
-                d(ia, ja) = norm(positions(ja, :) - positions(ia, :))
+                d(ia, ja) = norm(positions(:, ja) - positions(:, ia))
                 d(ja, ia) = d(ia, ja)
             enddo
         enddo
