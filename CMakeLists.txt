@@ -184,6 +184,8 @@ include(cmake/python.cmake)
 if (Python3_FOUND)
     find_python_module(numpy)
 
+    find_python_module(scipy)
+
     # The pytest framework makes it easy to write small tests, yet scales to support
     # complex functional testing for applications and libraries
     find_python_module(pytest)

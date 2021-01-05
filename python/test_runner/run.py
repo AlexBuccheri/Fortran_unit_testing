@@ -1,11 +1,12 @@
 import subprocess
 import argparse
+import sys
 
 from python.test_runner import settings
 from python.parse.read_stdout import ResultType
 
 
-def parse_test_options():
+def parse_test_options(argsv):
     """
     Parse test options passed directly to python using argparse.
     Where settings are not specified, default values are assigned.
@@ -31,6 +32,13 @@ def parse_test_options():
     :return: args, parsed arguments
     """
     parser = argparse.ArgumentParser(description='Run an application test.')
+    # TODO(Alex)If I'm passing argsv to this routine, this can be REMOVED!
+    # as it's for pytest, not my test
+    parser.add_argument('-s',
+                        type=str,
+                        action='store',
+                        help='pytest file')
+
 
     parser.add_argument('--build_type',
                         type=str,
@@ -59,7 +67,7 @@ def parse_test_options():
                         default=None,
                         help='Number of openMP threads')
 
-    args = parser.parse_args()
+    args = parser.parse_args(argsv)
 
     if 'serial' in args.build_type:
         assert args.np is None, "--np should not be set with serial build type"
@@ -100,6 +108,8 @@ def parse_test_options():
     # print(args)
 
     return args
+
+
 
 
 def run_executable(args, input_file) -> dict:
@@ -146,7 +156,8 @@ def setup(input_name: str):
     :return: Results in ResultType object
     """
     # Get executable location and run settings
-    run_settings = parse_test_options()
+    # TODO(Alex) Make generic
+    run_settings = parse_test_options(sys.argv[3:])
 
     # Run the code and return output to stdout
     stdout = run_executable(run_settings, input_name)
