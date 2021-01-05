@@ -1,0 +1,19 @@
+language: fortran
+
+sudo: required
+
+matrix:
+  include:
+    - os: linux
+      before_install:
+        - sudo apt-get update
+        - sudo apt-get install -y gcc-9 gfortran-9
+
+install:
+  - mkdir cmake-build-debug && cd cmake-build-debug
+  - cmake ../ -DCMAKE_BUILD_TYPE=debug -DDEBUG=1
+  - make all -j 4
+
+script:
+  - cd cmake-build-debug
+  - ctest --output-on-failure

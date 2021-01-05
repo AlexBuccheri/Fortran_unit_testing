@@ -217,7 +217,6 @@ foreach(INPUT ${MOLECULE_APP_TESTS})
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests
             # CONFIGURATIONS "" ${FAST_PRIVATE} # If one wishes to set different ctest targets
     )
-
     # Can also set useful test properties
     set_tests_properties(APPLICATIONTEST_SERIAL_${INPUT}
             PROPERTIES LABELS MOLECULE_SERIAL   # Assign a label for extra ctest timing info
