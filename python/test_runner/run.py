@@ -10,9 +10,10 @@ def parse_test_options(argv):
     """
     Parse test options passed directly to python using argparse.
     Where settings are not specified, default values are assigned.
-    The full executable path is determined from the build type.
 
-    Written to be used in conjunction with CMake variables. Some examples:
+    This has been written to be used in conjunction with CMake variables.
+    Some examples:
+
     Debug serial
         pytest -s tests/test.py --build_type ${CMAKE_BUILD_TYPE} "serial" --exe ${EXE_OUTPUT_NAME}
 
@@ -20,19 +21,22 @@ def parse_test_options(argv):
         pytest -s tests/test.py --build_type ${CMAKE_BUILD_TYPE} "hybrid" --exe ${EXE_OUTPUT_NAME}
             --np 2 --omp_num_threads 2
 
+    The full executable path is determined from the build type.
+
     If the number of processes (np) or number of OMP threads (omp_num_threads)
     are not set, defaults defined in the settings module are used.
 
     See https://docs.python.org/3.3/library/argparse.html
-        16.4.3. The add_argument() method¶
-    for more details on argparse.
+    16.4.3. The add_argument() method¶  for more details on argparse.
 
-    TODO(Alex) Consider replacing hybrid with omp mpi
-    TODO(Alex) add_argument settings should be conftest.py settings, else
-    defining the same things in two places
+    TODO
+        1. Consider replacing hybrid with omp mpi
+        2. add_argument settings should use those in conftest.py settings, else
+           defining the same things in two places (dangerous shadowing)
 
-    :param: argsv, subset of sys.argv, which should only contain the options below
-    :return: args, parsed arguments
+    :param: argsv, subset of sys.argv, which should only contain the options
+            used by the test driver.
+    :return: args, parsed arguments.
     """
     parser = argparse.ArgumentParser(description='Run an application test.')
 
@@ -65,6 +69,7 @@ def parse_test_options(argv):
 
     args = parser.parse_args(argv)
 
+    # Consistency checks
     if 'serial' in args.build_type:
         assert args.np is None, "--np should not be set with serial build type"
         assert args.omp_num_threads is None, "--omp_num_threads should not be set with serial build type"
@@ -137,7 +142,7 @@ def run_executable(args, input_file) -> dict:
          # Return bytes obj as a list of strings, split w.r.t newline
          return process.stdout.decode("utf-8").split('\n')
 
-    # TODO(Alex) Switch from check_output to run. Look into how to assess error
+    # TODO(Alex) Look into how to assess error, having switched from check_output to run
     except subprocess.CalledProcessError:
         print("subprocess error:", process.returncode, "found:", process.output)
         return None
@@ -146,16 +151,19 @@ def run_executable(args, input_file) -> dict:
 def setup(input_name: str):
     """
     Set up a job, run it and return the results
+
+    TODO
+        1. Get parsed command-line options used by the test runner (and not pytest)
+           rather than passing a hard-coded indexing, assuming the number of pytest args
+
     :param input_name:
     :return: Results in ResultType object
     """
-    # TODO(Alex) Get parsed command-line options used by the test runner (and not pytest)
-    # rather than passing a hard-coded indexing, assuming the number of pytest args
 
     # Get executable location and run settings
     run_settings = parse_test_options(sys.argv[3:])
 
-    # Run the code and return output to stdout
+    # Run the code and return the output of stdout
     stdout = run_executable(run_settings, input_name)
 
     # Parse stdout into results object and return
