@@ -13,7 +13,6 @@ set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/modules)
 # External libraries
 # ------------------------
 
-# Find Python 3
 # https://cmake.org/cmake/help/git-stage/module/FindPython3.html
 # Should update to python 3.7: https://docs.python.org/3/whatsnew/3.7.html
 find_package(Python3 3.6 COMPONENTS Interpreter) # Can't find Development
@@ -23,38 +22,18 @@ else()
     message("-- Python 3 interpreter not found")
 endif()
 
+# Find Unit Testing Framework
+include(cmake/findZofu.cmake)
 
-# Unit Testing Framework
-# I suspect Zofu should be a loaded lua module for pck-config variables to
-# get loaded into the environment
-# find_package(PkgConfig REQUIRED)
-# pkg_check_modules(ZOFU REQUIRED zofu>=1.0.0)
-
-# Unit test library
-# TODO(Alex) Pass ZOFU_DIR as a CMake argument
-set(ZOFU_DIR "/Users/alexanderbuccheri/Programs/zofu/zofu_library")
-find_library(ZOFU NAME "libzofu" "zofu" REQUIRED HINTS "${ZOFU_DIR}/lib")
-message("-- Zofu library location: ${ZOFU}")
-set(ZOFU_INCLUDE_DIR "${ZOFU_DIR}/include")
-include_directories(${ZOFU_INCLUDE_DIR})
-
-# Program that generates a unit test driver given a set of modules
-#set(ZOFU_DRIVER ${ZOFU_DIR}/bin/zofu-driver)
-# My Zofu driver
-set(ZOFU_DRIVER ${CMAKE_SOURCE_DIR}/python/zofu/make_zofu_driver.py)
-
-# TODO(Alex) Write a FindZofu.cmake
-# TODO(Alex) Zofu has CMake, which is great. Use that instead of building with MESON
-# TODO(Alex) Ask them to modify the driver generator to parse test routines from multiple modules
-# TODO(Alex) Ask Zofu author if he wants to post a link to this repo, demonstrating how Zofu can be used
-
+# Find MPI library
+include(cmake/mpi.cmake)
 
 # -------------------
 # Library
 # -------------------
 
 # TODO(Alex) rename the library to something like base
-# TODO(Alex) Note, current appear to be building a static library, not shared lib
+# TODO(Alex) Note, currently appear to be building a static library, not shared lib
 # hence why I've also set the archive directory
 add_library(libunit_testing "")
 
@@ -85,10 +64,11 @@ target_sources(libunit_testing
         src/parse/command_line.f90
         )
 
-# Set fortran pre-processing variable from CMake -DDEBUG flag
-if(DEBUG)
+# Use assertions if compiled in Debug mode
+option("USE_ASSERT" OFF)
+if(CMAKE_BUILD_TYPE MATCHES Debug)
     set_property(TARGET libunit_testing APPEND PROPERTY
-            COMPILE_DEFINITIONS "DEBUG")
+            COMPILE_DEFINITIONS "USE_ASSERT")
 endif()
 
 
@@ -162,8 +142,8 @@ list(APPEND maths_unit_tests "maths_functions_tests.f90"   # Unit tests for math
 list(APPEND geometry_unit_tests "geometry_tests.f90"       # Unit tests for geometry.f90
         )
 
-# TODO(Alex) Extend to work with MPI
-#create_unit_test_executable(MPI_ENABLED SUBDIR "maths" UNIT_TESTS ${maths_unit_tests} )
+# TODO(Alex) Demonstrate an MPI unit test
+#create_unit_test_executable(ENABLE_MPI SUBDIR "maths" UNIT_TESTS ${maths_unit_tests} )
 
 # Generates a unit test executable using the Zofu unit testing framework
 # Arguments are the relative unit test location SUBDIR and a list of UNIT_TESTS

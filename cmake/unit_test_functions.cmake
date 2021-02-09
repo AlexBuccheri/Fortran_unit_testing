@@ -10,11 +10,11 @@ function(create_unit_test_executable)
     # https://cmake.org/cmake/help/latest/command/cmake_parse_arguments.html
     # Define the CMake function signature keywords and their types
     # Of the general form: set(type KEYWORD)
-    set(options MPI_ENABLED)                        # Binary options
+    set(options ENABLE_MPI)                        # Binary options
     set(oneValueArgs SUBDIR)                        # Single-value options
     set(multiValueArgs UNIT_TESTS)                  # Multi-value options: Multiple arguments or list/s
     # TODO(Alex) Use a better prefix
-    cmake_parse_arguments(MY_FUNC                   # Prefix for all function arguments within function body
+    cmake_parse_arguments(FUNC                      # Prefix for all function arguments within function body
             "${options}"                            # Assign the binary options for the function
             "${oneValueArgs}"                       # Assign the single-value options for the function
             "${multiValueArgs}"                     # Assign the multi-value options for the function
@@ -22,7 +22,7 @@ function(create_unit_test_executable)
                                                     # number of arguments, which one want for a list of no fixed size
 
     # Prepend the UNIT_TESTS list with their full file path
-    list(TRANSFORM MY_FUNC_UNIT_TESTS PREPEND "${CMAKE_SOURCE_DIR}/src/${MY_FUNC_SUBDIR}/")
+    list(TRANSFORM FUNC_UNIT_TESTS PREPEND "${CMAKE_SOURCE_DIR}/src/${FUNC_SUBDIR}/")
 
     # Create a directory in the build folder to place generated test drivers
     set(TEST_DRIVER_DIR ${PROJECT_BINARY_DIR}/test_drivers)
@@ -31,41 +31,43 @@ function(create_unit_test_executable)
     # Runs the unix command specified by COMMAND:
     # Create a unit test driver that runs all tests in the respective subdirectory
     # using ${ZOFU_DRIVER} (which must be my custom script, not the binary supplied with the library)
-    IF(NOT ${MY_FUNC_MPI_ENABLED})
-    add_custom_command(
-            OUTPUT ${TEST_DRIVER_DIR}/${MY_FUNC_SUBDIR}_driver.f90
-            COMMAND ${ZOFU_DRIVER} ${MY_FUNC_UNIT_TESTS} ${TEST_DRIVER_DIR}/${MY_FUNC_SUBDIR}_driver.f90
-            COMMENT "Generating ${TEST_DRIVER_DIR}/${MY_FUNC_SUBDIR}_driver.f90")
+    IF(NOT ${FUNC_ENABLE_MPI})
+        add_custom_command(
+                OUTPUT ${TEST_DRIVER_DIR}/${FUNC_SUBDIR}_driver.f90
+                COMMAND ${ZOFU_DRIVER} "-mod" ${FUNC_UNIT_TESTS} "-driver" ${TEST_DRIVER_DIR}/${FUNC_SUBDIR}_driver.f90
+                COMMENT "Generating ${TEST_DRIVER_DIR}/${FUNC_SUBDIR}_driver.f90")
     ELSE()
-        # TODO(Alex) Extend to work with MPI
-        message(FATAL_ERROR "Custom Zofu driver has not yet been extended to work with MPI" )
+        add_custom_command(
+                OUTPUT ${TEST_DRIVER_DIR}/${FUNC_SUBDIR}_driver.f90
+                COMMAND ${ZOFU_DRIVER} "-mpi -mod" ${FUNC_UNIT_TESTS} "-driver" ${TEST_DRIVER_DIR}/${FUNC_SUBDIR}_driver.f90
+                COMMENT "Generating ${TEST_DRIVER_DIR}/${FUNC_SUBDIR}_driver.f90")
     ENDIF()
 
     # Create the test driver executable and add module targets:
     # all unit test modules and the test driver
-    add_executable(test_${MY_FUNC_SUBDIR})
+    add_executable(test_${FUNC_SUBDIR})
 
     # Set directory in which unit tests are built in
-    set_target_properties(test_${MY_FUNC_SUBDIR}
+    set_target_properties(test_${FUNC_SUBDIR}
             PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/unit_tests"
             )
 
-    target_sources(test_${MY_FUNC_SUBDIR}
+    target_sources(test_${FUNC_SUBDIR}
             PRIVATE
-            ${MY_FUNC_UNIT_TESTS}
-            ${TEST_DRIVER_DIR}/${MY_FUNC_SUBDIR}_driver.f90
+            ${FUNC_UNIT_TESTS}
+            ${TEST_DRIVER_DIR}/${FUNC_SUBDIR}_driver.f90
             )
     # Ensure our library gets compiled if one attempts to build the unit test executable
-    add_dependencies(test_${MY_FUNC_SUBDIR} libunit_testing)
+    add_dependencies(test_${FUNC_SUBDIR} libunit_testing)
 
     # Link the libraries that the unit test executable will dependent on
     # We assume that ZOFU is built and found by CMake at this point
-    target_link_libraries(test_${MY_FUNC_SUBDIR} ${ZOFU} libunit_testing)
+    target_link_libraries(test_${FUNC_SUBDIR} ${ZOFU} libunit_testing)
 
-    # Allows test executable `test_${MY_FUNC_SUBDIR}` to be run with ctest
+    # Allows test executable `test_${FUNC_SUBDIR}` to be run with ctest
     # All unit tests assumed to be FAST, hence no specific CONFIGURATIONs
-    add_test(NAME UNITTEST_${MY_FUNC_SUBDIR}
-             COMMAND ${CMAKE_BINARY_DIR}/unit_tests/test_${MY_FUNC_SUBDIR})
+    add_test(NAME UNITTEST_${FUNC_SUBDIR}
+             COMMAND ${CMAKE_BINARY_DIR}/unit_tests/test_${FUNC_SUBDIR})
 
 endfunction()
