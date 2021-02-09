@@ -1,6 +1,9 @@
 import subprocess
 import argparse
 import sys
+import os
+import warnings
+from pathlib import Path
 
 from python.test_runner import settings
 from python.parse.read_stdout import ResultType
@@ -115,56 +118,60 @@ def run_executable(args, input_file) -> dict:
     """
     Run an executable. Assumes CMake build system
 
-    :param args
-    :param input: input file name for executable
+    See here for a more extensive way to manage the env:
+    https://stackoverflow.com/questions/2059482/python-temporarily-modify-the-current-processs-environment
+
+    :param args: command-line arguments for the build type (list), fortran executable (str)
+                 MPI processes (int) and OMP threads (int).
+    :param input: input file name, defining the program settings.
     :param build_type_string: build type str, as defined in CMake with ${CMAKE_BUILD_TYPE}
+           and a variable for [serial, MPI, omp, hybrid].
     :param executable_name: Name of executable, as defined in CMake using
            RUNTIME_OUTPUT_NAME property of set_target_properties(...)
-    :return: Run code and return standard output
+    :return: Dictionary containing stdout, stderr and returncode (error if not 0).
+             The standard output and errors are lists, where each element is a string.
+             (Conversion from a byte object has been performed)
     """
-
-    set_omp = ['export OMP_NUM_THREADS=' + str(args.omp_num_threads)]
-    mpi_run = ['mpirun', '-np']
-    run_command = [args.exe, input_file]
-
-    if 'serial' or 'omp' in args.build_type:
-        # TODO(Alex) Need to get set_omp to work
-        #full_run_command = set_omp + run_command
-        full_run_command = run_command
-
-    elif 'mpi' or 'hybrid' in args.build_type:
-        # TODO(Alex) Get MPI working
-        quit('Need to get set_omp to work')
-        full_run_command = set_omp + mpi_run + run_command
-
     try:
-         process = subprocess.run(full_run_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-         # Return bytes obj as a list of strings, split w.r.t newline
-         return process.stdout.decode("utf-8").split('\n')
+        Path(args.exe).resolve(strict=True)
+    except FileNotFoundError as error:
+        raise error
 
-    # TODO(Alex) Look into how to assess error, having switched from check_output to run
-    except subprocess.CalledProcessError:
-        print("subprocess error:", process.returncode, "found:", process.output)
-        return None
+    os.environ["OMP_NUM_THREADS"] = str(args.omp_num_threads)
+    run_command = ['./' + args.exe, input_file]
+
+    if 'mpi' or 'hybrid' in args.build_type:
+        run_command = ['mpirun', '-np', str(args.np)] + run_command
+
+    process = subprocess.run(run_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    if process.returncode != 0:
+        warnings.warn('process returned to stderr: ' + " ".join(run_command))
+
+    return {'stdout': process.stdout.decode("utf-8").split('\n'),
+            'stderr': process.stderr.decode("utf-8").split('\n'),
+            'returncode': process.returncode}
 
 
 def setup(input_name: str):
     """
     Set up a job, run it and return the results
 
-    TODO
-        1. Get parsed command-line options used by the test runner (and not pytest)
-           rather than passing a hard-coded indexing, assuming the number of pytest args
-
-    :param input_name:
+    :param input_name: fortran program input file
     :return: Results in ResultType object
     """
+    try:
+        Path(input_name).resolve(strict=True)
+    except FileNotFoundError as error:
+        raise error
 
     # Get executable location and run settings
+    # TODO Get parsed command-line options used by the test runner (and not pytest)
+    # rather than passing a hard-coded indexing which assumes the number of pytest args
     run_settings = parse_test_options(sys.argv[3:])
 
-    # Run the code and return the output of stdout
-    stdout = run_executable(run_settings, input_name)
+    # Run the code and return the output
+    output = run_executable(run_settings, input_name)
 
     # Parse stdout into results object and return
-    return ResultType(stdout)
+    return ResultType(output['stdout'])
